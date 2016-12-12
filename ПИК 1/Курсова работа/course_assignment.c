@@ -59,7 +59,7 @@ void readFileWriteFile() {
 	fp = fopen(fileToRead, "r");
 	if(fp == NULL) {
 		perror("Error: ");
-		return 1;  // Might need to be exits due to void type
+		exit(0);
 	}
 
 	while(fgets(buffer, sizeof buffer, fp) != NULL) {
@@ -74,7 +74,7 @@ void readFileWriteFile() {
 	fp = fopen(fileToWrite, "w");
 	if(fp == NULL) {
 		perror("Error: ");
-		return 1;  // Might need to be exits due to void type
+		exit(0);
 	}
 
 	fprintf(fp, "Longest line:\n %s\nIdentifier char count:\n %d\n", longestLine, 24);
@@ -90,10 +90,11 @@ void readKeyboardWriteScreen() {}
 
 char* getFileExtension(char fileName[]) {
 	char *pch;
+	char str[20];
 
-	pch = strtok(fileName, ".");
-	if(pch != NULL)
-		pch = strtok(NULL, ".");
+	strcpy(str, fileName);
+	pch = strtok(str, ".");
+	pch = strtok(NULL, ".");
 
 	return pch;
 }
