@@ -117,10 +117,10 @@ void readKeyboardWriteScreen() {}
 
 char* getLongestLine(FILE *fp) {
 	char buffer[250];  // Contains the lines read by fgets
-	char *longestLine;
+	char longestLine[250];
 	int longestLength = 0;
 
-	while(fgets(buffer, sizeof buffer, fp) != NULL) {  // If the line contains a printf with a \n character the logic might screw up
+	while(fgets(buffer, sizeof buffer, fp) != NULL) {  
 		if(strlen(buffer) > longestLength) {  
 			longestLength = strlen(buffer);
 			strcpy(longestLine, buffer);
@@ -133,19 +133,31 @@ char* getLongestLine(FILE *fp) {
 int getIdentifierCharCount(FILE *fp) {  
 	char buffer[30];  // Contains the strings read by fscanf
 	int identifierCharCount = 0;
-	int isIdentifier = 0;
-	int i;
+	int isIdentifier = 0; int isFunc = 0; int isArg = 0; int i;
 
 	while(fscanf(fp, "%s", buffer) == 1) {
-		if(isIdentifier) {
-			for (i = 0; i < strlen(buffer); ++i) {
+		if(isIdentifier || isArg) {			
+			if(isArg)
+				isArg = 0;
 
-				if(buffer[i] >= 'a' && buffer[i] <= 'z')
-					identifierCharCount++; 
-					// printf("%c\n", buffer[i]);
+			for (i = 0; i < strlen(buffer); ++i) {
+				if(isFunc && buffer[i] == ')')
+					isFunc = 0;
+
+				if(isFunc && isIdentifier && buffer[i] != ')') {
+					isFunc = 0;
+					isArg = 1;
+					break;
+				}
+
+				if((buffer[i] >= 'a' && buffer[i] <= 'z') || (buffer[i] >= 'A' && buffer[i] <= 'Z'))
+					identifierCharCount++;
 
 				if(buffer[i] == '(')
-					break;
+					isFunc = 1;
+
+				if(buffer[i] == ',' && isIdentifier)
+					isArg = 1;
 			}
 		} 	
 		isIdentifier = 0;
@@ -165,12 +177,14 @@ char* getFileExtension(char fileName[]) {
 	pch = strtok(str, ".");
 	pch = strtok(NULL, ".");
 
+	if(pch == NULL)
+		return fileName;
 	return pch;
 }
 
 int isDataType(char *val) {
 	int i;
-	char *dataTypes[] = {"int", "double", "float", "char", "void"};
+	char *dataTypes[] = {"int", "double", "float", "char", "void", "FILE"};
 	int arrSize = sizeof dataTypes/sizeof dataTypes[0];
 
 	for (i = 0; i < arrSize; ++i) {
