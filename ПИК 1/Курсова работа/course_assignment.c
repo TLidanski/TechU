@@ -8,8 +8,10 @@ void readKeyboardWriteFile();
 void readKeyboardWriteScreen();
 char* getLongestLine(FILE *fp);
 int getIdentifierCharCount(FILE *fp);
+void countIdentifiers(char *inputStream, int *idCharCount, int *isIdentifier, int *isFunc, int *isArg);
 char* getFileExtension(char fileName[]);
 int isDataType(char *val);
+int hasSemicolon(char *val);
 
 int main() {
 	printf("Select:\n1 - Read from file, write to file\n2 - Read from file, write to screen\n3 - Read from keyboard, write to file\n4 - Read from keyboard, write to screen\n");
@@ -111,9 +113,76 @@ void readFileWriteScreen() {
 	printf("Longest line:\n %s\nIdentifier char count:\n %d\n", longestLine, idCharCount);
 }
 
-void readKeyboardWriteFile() {}
+void readKeyboardWriteFile() {
+	FILE *fp;
+	char keyboardInput[30]; char fileToWrite[20]; 
+	char longestLine[250]; char lines[20][250] = {};
+	int longestLength = 0; int idCharCount = 0; int i;
+	int isIdentifier = 0; int isFunc = 0; int isArg = 0;
+	int lineNum = 0;
 
-void readKeyboardWriteScreen() {}
+	printf("Enter the name of the file where you want to write\n");
+	scanf("%s", fileToWrite);
+
+	printf("Enter the code\n");
+	while(scanf("%s", keyboardInput) == 1) {
+		strcat(lines[lineNum], keyboardInput);
+
+		if(strcmp(keyboardInput, "{") == 0 || hasSemicolon(keyboardInput))
+			lineNum++;	
+
+		countIdentifiers(keyboardInput, &idCharCount, &isIdentifier, &isFunc, &isArg);
+	}
+
+	for (i = 0; i < lineNum; ++i) {
+		if(strlen(lines[i]) > longestLength) {
+			longestLength = strlen(lines[i]);
+			strcpy(longestLine, lines[i]);
+		}
+	}
+
+	if(lineNum == 0)
+		strcpy(longestLine, lines[0]);
+
+	fp = fopen(fileToWrite, "w");
+	if(fp == NULL) {
+		perror("Error: ");
+		exit(0);
+	}
+
+	fprintf(fp, "Longest line:\n %s\nIdentifier char count:\n %d\n", longestLine, idCharCount);	
+	fclose(fp);
+}
+
+void readKeyboardWriteScreen() {
+	char keyboardInput[30]; 
+	char longestLine[250]; char lines[20][250] = {};
+	int longestLength = 0; int idCharCount = 0; int i;
+	int isIdentifier = 0; int isFunc = 0; int isArg = 0;
+	int lineNum = 0;
+
+	printf("Enter the code\n");
+	while(scanf("%s", keyboardInput) == 1) {
+		strcat(lines[lineNum], keyboardInput);
+
+		if(strcmp(keyboardInput, "{") == 0 || hasSemicolon(keyboardInput))
+			lineNum++;	
+
+		countIdentifiers(keyboardInput, &idCharCount, &isIdentifier, &isFunc, &isArg);
+	}
+
+	for (i = 0; i < lineNum; ++i) {
+		if(strlen(lines[i]) > longestLength) {
+			longestLength = strlen(lines[i]);
+			strcpy(longestLine, lines[i]);
+		}
+	}
+
+	if(lineNum == 0)
+		strcpy(longestLine, lines[0]);
+
+	printf("Longest line:\n %s\nIdentifier char count:\n %d\n", longestLine, idCharCount);
+}
 
 char* getLongestLine(FILE *fp) {
 	char buffer[250];  // Contains the lines read by fgets
@@ -133,40 +202,46 @@ char* getLongestLine(FILE *fp) {
 int getIdentifierCharCount(FILE *fp) {  
 	char buffer[30];  // Contains the strings read by fscanf
 	int identifierCharCount = 0;
-	int isIdentifier = 0; int isFunc = 0; int isArg = 0; int i;
+	int isIdentifier = 0; int isFunc = 0; int isArg = 0;
 
 	while(fscanf(fp, "%s", buffer) == 1) {
-		if(isIdentifier || isArg) {			
-			if(isArg)
-				isArg = 0;
-
-			for (i = 0; i < strlen(buffer); ++i) {
-				if(isFunc && buffer[i] == ')')
-					isFunc = 0;
-
-				if(isFunc && isIdentifier && buffer[i] != ')') {
-					isFunc = 0;
-					isArg = 1;
-					break;
-				}
-
-				if((buffer[i] >= 'a' && buffer[i] <= 'z') || (buffer[i] >= 'A' && buffer[i] <= 'Z'))
-					identifierCharCount++;
-
-				if(buffer[i] == '(')
-					isFunc = 1;
-
-				if(buffer[i] == ',' && isIdentifier)
-					isArg = 1;
-			}
-		} 	
-		isIdentifier = 0;
-
-		if(isDataType(buffer))
-			isIdentifier = 1;
+		countIdentifiers(buffer, &identifierCharCount, &isIdentifier, &isFunc, &isArg);
 	}
 
 	return identifierCharCount;
+}
+
+void countIdentifiers(char *inputStream, int *idCharCount, int *isIdentifier, int *isFunc, int *isArg) {
+	int i;
+
+	if(*isIdentifier || *isArg) {			
+		if(*isArg)
+			*isArg = 0;
+
+		for (i = 0; i < strlen(inputStream); ++i) {
+			if(*isFunc && inputStream[i] == ')')
+				*isFunc = 0;
+
+			if(*isFunc && *isIdentifier && inputStream[i] != ')') {
+				*isFunc = 0;
+				*isArg = 1;
+				break;
+			}
+
+			if((inputStream[i] >= 'a' && inputStream[i] <= 'z') || (inputStream[i] >= 'A' && inputStream[i] <= 'Z'))
+				(*idCharCount)++;
+
+			if(inputStream[i] == '(')
+				*isFunc = 1;
+
+			if(inputStream[i] == ',' && *isIdentifier)
+				*isArg = 1;
+		}
+	} 	
+	*isIdentifier = 0;
+
+	if(isDataType(inputStream))
+		*isIdentifier = 1;
 }
 
 char* getFileExtension(char fileName[]) {
@@ -192,4 +267,8 @@ int isDataType(char *val) {
 			return 1;
 	}
 	return 0;
+}
+
+int hasSemicolon(char *val) {
+	return  val[strlen(val) - 1] == ';' ? 1 : 0;
 }
