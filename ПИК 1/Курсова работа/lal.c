@@ -4,7 +4,7 @@ void lol(){}
 int main(int argc, char *argv[]) {
 	FILE *fp;
 	double yahoo, lal;
-	printf("TISHO GOSPODAR NA SVETA!\n");
+	printf("ONE LONG PRINTF!\n");
 
 	return 0;
 }
