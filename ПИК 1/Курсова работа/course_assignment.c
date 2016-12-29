@@ -271,5 +271,5 @@ int isDataType(char *val) {
 }
 
 int hasSemicolon(char *val) {
-	return  val[strlen(val) - 1] == ';' ? 1 : 0;
+	return val[strlen(val) - 1] == ';' ? 1 : 0;
 }
