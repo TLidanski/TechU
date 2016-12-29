@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#define MAXSIZE 250
 
 void readFileWriteFile(); 
 void readFileWriteScreen();
@@ -46,7 +47,7 @@ void readFileWriteFile() {
 	char fileToRead[20];  // Name of file we'll read from
 	char fileToWrite[20];  // Name of file where we'll write
 
-	char longestLine[250];
+	char longestLine[MAXSIZE];
 	int idCharCount;
 
 	printf("Enter the name of the file you want to read\n");
@@ -87,7 +88,7 @@ void readFileWriteScreen() {
 	FILE *fp;
 	char fileToRead[20];  // Name of file we'll read from
 
-	char longestLine[250];
+	char longestLine[MAXSIZE];
 	int idCharCount;
 
 	printf("Enter the name of the file you want to read\n");
@@ -116,7 +117,7 @@ void readFileWriteScreen() {
 void readKeyboardWriteFile() {
 	FILE *fp;
 	char keyboardInput[30]; char fileToWrite[20]; 
-	char longestLine[250]; char lines[20][250] = {};
+	char longestLine[MAXSIZE]; char lines[20][MAXSIZE] = {};
 	int longestLength = 0; int idCharCount = 0; int i;
 	int isIdentifier = 0; int isFunc = 0; int isArg = 0;
 	int lineNum = 0;
@@ -156,7 +157,7 @@ void readKeyboardWriteFile() {
 
 void readKeyboardWriteScreen() {
 	char keyboardInput[30]; 
-	char longestLine[250]; char lines[20][250] = {};
+	char longestLine[MAXSIZE]; char lines[20][MAXSIZE] = {};
 	int longestLength = 0; int idCharCount = 0; int i;
 	int isIdentifier = 0; int isFunc = 0; int isArg = 0;
 	int lineNum = 0;
@@ -185,8 +186,8 @@ void readKeyboardWriteScreen() {
 }
 
 char* getLongestLine(FILE *fp) {
-	char buffer[250];  // Contains the lines read by fgets
-	char longestLine[250];
+	char buffer[MAXSIZE];  // Contains the lines read by fgets
+	char longestLine[MAXSIZE];
 	int longestLength = 0;
 
 	while(fgets(buffer, sizeof buffer, fp) != NULL) {  
