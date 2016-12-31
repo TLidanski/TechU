@@ -36,7 +36,6 @@ int main() {
 
 		default: 
 			printf("Invalid value\n");
-			exit(0);
 	}
 
 	return 0;
