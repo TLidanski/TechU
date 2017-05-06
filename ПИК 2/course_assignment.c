@@ -13,8 +13,6 @@ typedef struct Movie {
 	struct Movie *nextMovie;
 } Movie;
 
-// Movie *listHead = NULL;
-
 bool isEmpty(Movie **listHead) {
 	return *listHead == NULL;
 }
@@ -110,9 +108,52 @@ void deleteMovie() {
 	fclose(fp);
 }
 
-void printList() {
-	Movie *movie = (Movie*)malloc(sizeof(Movie));
-	movie = getListHead();
+void switchValues(Movie **movie, Movie **nextMovie) {
+	long long tempId;
+	char tempMovieTitle[50]; char tempMovieDirector[50];
+	double tempMovieDuration; int tempReleaseYear;
+
+	tempId = (*movie)->id;
+	strcpy(tempMovieTitle, (*movie)->movieTitle);
+	strcpy(tempMovieDirector, (*movie)->movieDirector);
+	tempMovieDuration = (*movie)->movieDuration;
+	tempReleaseYear = (*movie)->releaseYear;
+
+	(*movie)->id = (*nextMovie)->id;
+	strcpy((*movie)->movieTitle, (*nextMovie)->movieTitle);
+	strcpy((*movie)->movieDirector, (*nextMovie)->movieDirector);
+	(*movie)->movieDuration = (*nextMovie)->movieDuration;
+	(*movie)->releaseYear = (*nextMovie)->releaseYear;
+
+	(*nextMovie)->id = tempId;
+	strcpy((*nextMovie)->movieTitle, tempMovieTitle);
+	strcpy((*nextMovie)->movieDirector, tempMovieDirector);
+	(*nextMovie)->movieDuration = tempMovieDuration;
+	(*nextMovie)->releaseYear = tempReleaseYear;
+}
+
+Movie* sortListYearDesc() {
+	Movie *listHead = getListHead();
+	Movie *currPtr; Movie *nextPtr = NULL;
+
+	if(isEmpty(&listHead))
+		return NULL;
+
+	for (currPtr = listHead; currPtr->nextMovie != NULL; currPtr = currPtr->nextMovie) {
+
+		for (nextPtr = currPtr->nextMovie; nextPtr != NULL; nextPtr = nextPtr->nextMovie) {
+
+			if(currPtr->releaseYear < nextPtr->releaseYear)
+				switchValues(&currPtr, &nextPtr);
+		}
+	}
+	currPtr = listHead;
+
+	return currPtr;
+}
+
+void printList(int val) {
+	Movie *movie = (val == 3) ? sortListYearDesc() : getListHead();
 
 	while(movie != NULL) {
 		printf("[\n");
@@ -124,7 +165,7 @@ void printList() {
 }
 
 void displayMenu() {
-	printf("Select:\n1 - Add a Movie\n2 - Delete a director's movies\n3 - Print all movies, year - desc\n4 - Get movie with longest duration\n");
+	printf("Select:\n1 - Add a Movie\n2 - Delete a director's movies\n3 - Print all movies, year - desc\n4 - Get movie with longest duration\n\n5 - Print the original list\n6 - Exit\n");
 
 	int select;
 	scanf("%d", &select);
@@ -139,11 +180,18 @@ void displayMenu() {
 			displayMenu();
 		break;
 		case 3:
-			printList();
+			printList(select);
 			displayMenu();
 		break;
 		case 4:
 			
+			displayMenu();
+		break;
+		case 5:
+			printList(select);
+			displayMenu();
+		break;
+		case 6:
 		break;
 
 		default: 
