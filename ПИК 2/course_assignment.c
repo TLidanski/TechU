@@ -13,6 +13,22 @@ typedef struct Movie {
 	struct Movie *nextMovie;
 } Movie;
 
+bool isEmpty(Movie **listHead);
+void createMovie();
+Movie* getListHead();
+void deleteMovie();
+void switchValues(Movie **movie, Movie **nextMovie);
+Movie* sortListYearDesc();
+void printList(int val);
+void getLongestMovie();
+void displayMenu();
+
+int main() {
+	displayMenu();
+
+	return 0;
+}
+
 bool isEmpty(Movie **listHead) {
 	return *listHead == NULL;
 }
@@ -73,7 +89,7 @@ Movie* getListHead() {
 
 void deleteMovie() {
 	Movie *listHead = getListHead();
-	Movie *currPtr = listHead; Movie *prevPtr = NULL;
+	Movie *currPtr; Movie *prevPtr = NULL;
 	char director[50]; FILE *fp;
 
 	if(isEmpty(&listHead))
@@ -87,24 +103,21 @@ void deleteMovie() {
 	printf("Enter movie director\n");
 	scanf("%s", director);
 
-	while(currPtr != NULL) {
+	for (currPtr = listHead; currPtr != NULL; prevPtr = currPtr, currPtr = currPtr->nextMovie)	{
 		if(strcmp(currPtr->movieDirector, director) == 0) {
 
-			if(currPtr == listHead) {
-				listHead = listHead->nextMovie;
-				free(currPtr);
-				currPtr = listHead;
+			if(prevPtr == NULL) {
+				listHead = currPtr->nextMovie;
 			} else {
 				prevPtr->nextMovie = currPtr->nextMovie;
-				free(currPtr);
 			}
 
+			free(currPtr);
 		} else {
 			fwrite(currPtr, sizeof(Movie), 1, fp);
-			prevPtr = currPtr;
-			currPtr = currPtr->nextMovie;
 		}
 	}
+
 	fclose(fp);
 }
 
@@ -134,10 +147,10 @@ void switchValues(Movie **movie, Movie **nextMovie) {
 
 Movie* sortListYearDesc() {
 	Movie *listHead = getListHead();
-	Movie *currPtr; Movie *nextPtr = NULL;
+	Movie *currPtr; Movie *nextPtr = NULL; FILE *fp;
 
 	if(isEmpty(&listHead))
-		return NULL;
+		return;
 
 	for (currPtr = listHead; currPtr->nextMovie != NULL; currPtr = currPtr->nextMovie) {
 
@@ -153,15 +166,32 @@ Movie* sortListYearDesc() {
 }
 
 void printList(int val) {
-	Movie *movie = (val == 3) ? sortListYearDesc() : getListHead();
-
+	Movie *movie = (val == 3) ? sortListYearDesc() : getListHead(); 
+	
 	while(movie != NULL) {
 		printf("[\n");
-		printf("ID - %lli\nTitle - %s\nDirector - %s\nDuration - %lf\nYear - %d\n", movie->id, movie->movieTitle, movie->movieDirector, movie->movieDuration, movie->releaseYear);
+		printf("ID - %lli\nTitle - %s\nDirector - %s\nDuration - %.2lf\nYear - %d\n", movie->id, movie->movieTitle, movie->movieDirector, movie->movieDuration, movie->releaseYear);
 		printf("]\n");
+
 		movie = movie->nextMovie;
-	}
+	}		
 	printf("\n\n\n\n");
+}
+
+void getLongestMovie() {
+	Movie *moviePtr = getListHead();
+	Movie *longestMovie;
+	double duration = 0;
+
+	while(moviePtr != NULL) {
+		if(moviePtr->movieDuration > duration) {
+			duration = moviePtr->movieDuration;
+			longestMovie = moviePtr;
+		}
+		moviePtr = moviePtr->nextMovie;
+	}
+	printf("Longest Movie:\nID - %lli\nTitle - %s\nDirector - %s\nDuration - %.2lf\nYear - %d\n\n", 
+			longestMovie->id, longestMovie->movieTitle, longestMovie->movieDirector, longestMovie->movieDuration, longestMovie->releaseYear);
 }
 
 void displayMenu() {
@@ -184,7 +214,7 @@ void displayMenu() {
 			displayMenu();
 		break;
 		case 4:
-			
+			getLongestMovie();
 			displayMenu();
 		break;
 		case 5:
@@ -197,10 +227,4 @@ void displayMenu() {
 		default: 
 			printf("Invalid value\n");
 	}
-}
-
-int main() {
-	displayMenu();
-
-	return 0;
 }
