@@ -147,7 +147,7 @@ void switchValues(Movie **movie, Movie **nextMovie) {
 
 Movie* sortListYearDesc() {
 	Movie *listHead = getListHead();
-	Movie *currPtr; Movie *nextPtr = NULL; FILE *fp;
+	Movie *currPtr; Movie *nextPtr = NULL;
 
 	if(isEmpty(&listHead))
 		return;
