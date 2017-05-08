@@ -160,9 +160,8 @@ Movie* sortListYearDesc() {
 				switchValues(&currPtr, &nextPtr);
 		}
 	}
-	currPtr = listHead;
 
-	return currPtr;
+	return listHead;
 }
 
 void printList(int val) {
