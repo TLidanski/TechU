@@ -21,6 +21,7 @@ void switchValues(Movie **movie, Movie **nextMovie);
 Movie* sortListYearDesc();
 void printList(int val);
 void getLongestMovie();
+void freeList();
 void displayMenu();
 
 int main() {
@@ -147,10 +148,10 @@ void switchValues(Movie **movie, Movie **nextMovie) {
 
 Movie* sortListYearDesc() {
 	Movie *listHead = getListHead();
-	Movie *currPtr; Movie *nextPtr = NULL; FILE *fp;
+	Movie *currPtr; Movie *nextPtr = NULL;
 
 	if(isEmpty(&listHead))
-		return;
+		return NULL;
 
 	for (currPtr = listHead; currPtr->nextMovie != NULL; currPtr = currPtr->nextMovie) {
 
@@ -165,7 +166,10 @@ Movie* sortListYearDesc() {
 }
 
 void printList(int val) {
-	Movie *movie = (val == 3) ? sortListYearDesc() : getListHead(); 
+	Movie *movie = (val == 3) ? sortListYearDesc() : getListHead();
+
+	if(isEmpty(&movie))
+		return; 
 	
 	while(movie != NULL) {
 		printf("[\n");
@@ -182,6 +186,9 @@ void getLongestMovie() {
 	Movie *longestMovie;
 	double duration = 0;
 
+	if(isEmpty(&moviePtr))
+		return;
+
 	while(moviePtr != NULL) {
 		if(moviePtr->movieDuration > duration) {
 			duration = moviePtr->movieDuration;
@@ -191,6 +198,18 @@ void getLongestMovie() {
 	}
 	printf("Longest Movie:\nID - %lli\nTitle - %s\nDirector - %s\nDuration - %.2lf\nYear - %d\n\n", 
 			longestMovie->id, longestMovie->movieTitle, longestMovie->movieDirector, longestMovie->movieDuration, longestMovie->releaseYear);
+}
+
+void freeList() {
+	Movie *ptr = getListHead();
+
+	if(isEmpty(&ptr))
+		return;
+
+	while(ptr != NULL) {
+		free(ptr);
+		ptr = ptr->nextMovie;
+	}
 }
 
 void displayMenu() {
@@ -221,6 +240,7 @@ void displayMenu() {
 			displayMenu();
 		break;
 		case 6:
+			freeList();
 		break;
 
 		default: 
