@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html><head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <link rel="stylesheet" type="text/css" href="lube_files/x3dom.css">
+    <script type="text/javascript" src="lube_files/x3dom.js"></script>
+    <script src="lube_files/jquery.js"></script>
+
+    <style>
+      .container {
+        display: block;
+        padding: 30px;
+        background-size: cover; 
+        position: absolute;
+        width: 400px;
+        height: 400px;
+      }
+
+      x3d {
+        margin: 30px;
+      }
+    </style>
+    <script>
+      $(document).ready(function() {
+        function getRandom(min = 0, max = 1) {
+          return Math.random(min, max);
+        }
+        
+        function createStringFromInput(number1, number2 = 0, number3 = 0) {
+            if(Array.isArray(number1)) {
+              var return_val = '';
+              for(var i = 0; i < number1.length; i++) {
+                return_val += Number(number1[i]) + ' ';
+              }
+              return return_val;
+            }
+            return '' + number1 + ' ' + number2 + ' ' + number3; 
+        }
+
+        function getNewCombination() {
+          return createStringFromInput(getRandom(), getRandom(), getRandom());
+        }
+
+        function changeColor(parent){
+          var $parent = $(parent);
+          var $material = $parent.find('appearance material');
+
+          var $groundAndSkyContainer = $parent.parent().siblings('transform').find('background');
+
+          $material.attr('diffuseColor', getNewCombination());
+          $groundAndSkyContainer.attr('groundColor', getNewCombination());
+          $groundAndSkyContainer.attr('skyColor', getNewCombination());
+        }
+
+        function attachHandlers() {
+          $('#model').click(function() {
+            changeColor(this);
+          });
+
+          $('#resetView').click(function() {
+            $('#someUniqueId')[0].runtime.resetView();
+          });
+
+          $('#showFull').click(function() {
+            $('#someUniqueId')[0].runtime.showAll();
+          });
+
+          $('#previousViewpoint').click(function() {
+            $('#someUniqueId')[0].runtime.prevView();
+          });
+
+          $('#showFromX').click(function() {
+            $('#someUniqueId')[0].runtime.showObject($('#model')[0], 'posX');
+          });
+
+          $('#showFromY').click(function() {
+            $('#someUniqueId')[0].runtime.showObject($('#model')[0], 'posY');
+          });
+
+          $('#showFromZ').click(function() {
+            $('#someUniqueId')[0].runtime.showObject($('#model')[0], 'posZ');
+          });
+
+          $('#showFromXneg').click(function() {
+            $('#someUniqueId')[0].runtime.showObject($('#model')[0], 'negX');
+          });
+
+          $('#showFromYneg').click(function() {
+            $('#someUniqueId')[0].runtime.showObject($('#model')[0], 'negY');
+          });
+
+          $('#showFromZneg').click(function() {
+            $('#someUniqueId')[0].runtime.showObject($('#model')[0], 'negZ');
+          });
+
+          var urls = ['sid.jpg', 'sid2.jpg', 'sid3.jpg', 'sid4.jpg', 'sid5.jpg', 'sid6.png', 'sid7.jpg', 'sid8.gif', 'sid9.png'];
+          $('#changeImage').click(function() {
+            var $ImageTexture = $('ImageTexture');
+            
+            var curr_url = $ImageTexture.attr('url');
+            var ind = urls.indexOf(curr_url);
+
+            if(ind == urls.length - 1) {
+              ind = 0;
+            } else {
+              ind += 1;
+            }
+
+            $ImageTexture.attr('url', urls[ind]);
+          });
+
+          $('#removeImage').click(function() {
+            var $ImageTexture = $('ImageTexture');
+            $ImageTexture.detach();
+            $('#changeImage').attr('disabled', 'disabled');
+            $(this).attr('disabled', 'disabled');
+            $('#addImage').removeAttr('disabled');
+          });
+
+          $('#addImage').click(function() {
+            var $ImageTexture = $('<ImageTexture></ImageTexture>');
+            $ImageTexture.attr('url', urls[0]);
+            var $shape = $('#model appearance');
+
+            $ImageTexture.appendTo($shape);
+            $('#changeImage').removeAttr('disabled');
+            $('#removeImage').removeAttr('disabled');
+            $(this).attr('disabled', 'disabled');
+          });
+        }
+
+        attachHandlers();
+        // $('.container').css('background-image', 'url("background.jpg")');
+
+      });
+    </script>
+  </head>
+  <body>
+    <button id="resetView">Reset View</button>
+    <button id="showFull">Show Full</button>
+    <br>
+    <br>
+    <button id="showFromX">Show From X</button>
+    <button id="showFromY">Show From Y</button>
+    <button id="showFromZ">Show From Z</button>
+    <br>
+    <br>
+    <button id="showFromXneg">Show From X opposite</button>
+    <button id="showFromYneg">Show From Y opposite</button>
+    <button id="showFromZneg">Show From Z opposite</button>
+    <br>
+    <br>
+    <!-- <button id="changeImage">Change Image</button>
+    <button id="removeImage">Remove Image</button>
+    <button id="addImage" disabled="disabled">Add Image</button> -->
+    <br>
+    <br>
+    <div class="container" style="background-image: url(&quot;background.jpg&quot;);">
+    </div>
+    <x3d id="someUniqueId" showstat="false" showlog="false" x="0px" y="0px" width="400px" height="400px">
+      <scene render="true" bboxcenter="0,0,0" bboxsize="-1,-1,-1" pickmode="idBuf" dopickpass="true">
+        <worldinfo info="&quot;This Web3D Content was created with Vivaty Studio, a Web3D authoring tool&quot; &quot;www.mediamachines.com&quot;" title="Untitled2"></worldinfo>
+        <group def="Import_part_b3_wrl" render="true" bboxcenter="0,0,0" bboxsize="-1,-1,-1">
+          <shape id="model" render="true" bboxcenter="0,0,0" bboxsize="-1,-1,-1" ispickable="true">
+            <appearance sorttype="auto" alphaclipthreshold="0.1">
+              <imagetexture url="sid.jpg" repeats="true" repeatt="true" scale="true" hidechildren="true"></imagetexture>
+              <material def="material0" ambientintensity="1" diffusecolor="0.79216 0.81961 0.93333" shininess="0.5" specularcolor="0.39608 0.4098 0.46667" emissivecolor="0,0,0"></material>
+            </appearance>
+            <indexedfaceset creaseangle="0.5236" normalindex="23 23 23 -1 23 23 23 -1 23 23 23 -1 23 23 23 -1 23 23 23 -1 23 23 23 -1 23 23 23 -1 23 23 23 -1 23 23 23 -1 23 23 23 -1 23 23 23 -1 23 23 23 -1 23 23 23 -1 23 23 23 -1 23 23 23 -1 23 23 23 -1 23 23 23 -1 23 23 23 -1 23 23 23 -1 23 23 23 -1 23 23 23 -1 23 23 23 -1 23 23 23 -1 23 23 23 -1 42 42 40 -1 40 42 40 -1 40 40 38 -1 38 40 38 -1 38 38 36 -1 36 38 36 -1 36 36 34 -1 34 36 34 -1 34 34 31 -1 31 34 31 -1 31 31 29 -1 29 31 29 -1 29 29 27 -1 27 29 27 -1 27 27 25 -1 25 27 25 -1 25 25 17 -1 17 25 17 -1 17 17 15 -1 15 17 15 -1 15 15 13 -1 13 15 13 -1 13 13 11 -1 11 13 11 -1 11 11 8 -1 8 11 8 -1 8 8 6 -1 6 8 6 -1 6 6 4 -1 4 6 4 -1 4 4 2 -1 2 4 2 -1 2 2 0 -1 0 2 0 -1 21 21 21 -1 21 21 21 -1 21 21 21 -1 21 21 21 -1 21 21 21 -1 0 0 0 -1 0 0 0 -1 0 0 0 -1 0 0 0 -1 19 19 19 -1 19 19 19 -1 19 19 19 -1 19 19 19 -1 19 19 19 -1 19 19 19 -1 19 19 19 -1 19 19 19 -1 19 19 19 -1 19 19 19 -1 19 19 19 -1 19 19 19 -1 19 19 19 -1 19 19 19 -1 19 19 19 -1 19 19 19 -1 19 19 19 -1 19 19 19 -1 19 19 19 -1 19 19 19 -1 42 42 42 -1 42 42 42 -1 42 42 42 -1 42 42 42 -1 23 23 23 -1 23 23 23 -1 23 23 23 -1 23 23 23 -1 23 23 23 -1 23 23 23 -1 21 21 21 -1 21 21 21 -1 21 21 21 -1 21 21 21 -1 21 21 21 -1 20 20 20 -1 20 20 20 -1 20 20 20 -1 20 20 20 -1 20 20 20 -1 20 20 20 -1 20 20 20 -1 20 20 20 -1 42 42 42 -1 42 42 42 -1 42 42 42 -1 21 21 21 -1 21 21 21 -1 21 21 21 -1 21 21 21 -1 21 21 21 -1 21 21 21 -1 21 21 21 -1 21 21 21 -1 0 0 0 -1 0 0 0 -1 0 0 0 -1 21 21 21 -1 21 21 21 -1 22 22 22 -1 22 22 22 -1 22 22 22 -1 22 22 22 -1 21 21 21 -1 21 21 21 -1 0 0 0 -1 0 0 0 -1 19 19 19 -1 19 19 19 -1 42 42 42 -1 42 42 42 -1 23 23 23 -1 23 23 23 -1 42 42 41 -1 42 41 41 -1 41 41 39 -1 41 39 39 -1 39 39 37 -1 39 37 37 -1 37 37 35 -1 37 35 35 -1 35 35 33 -1 35 33 33 -1 33 33 32 -1 33 32 32 -1 32 32 30 -1 32 30 30 -1 30 30 28 -1 30 28 28 -1 28 28 26 -1 28 26 26 -1 26 26 24 -1 26 24 24 -1 24 24 18 -1 24 18 18 -1 18 18 16 -1 18 16 16 -1 16 16 14 -1 16 14 14 -1 14 14 12 -1 14 12 12 -1 12 12 10 -1 12 10 10 -1 10 10 9 -1 10 9 9 -1 9 9 7 -1 9 7 7 -1 7 7 5 -1 7 5 5 -1 5 5 3 -1 5 3 3 -1 3 3 1 -1 3 1 1 -1 1 1 0 -1 1 0 0 -1 23 23 23 -1 23 23 23 -1 23 23 23 -1 23 23 23 -1 23 23 23 -1 23 23 23 -1 23 23 23 -1 23 23 23 -1 23 23 23 -1 23 23 23 -1 23 23 23 -1 23 23 23 -1 23 23 23 -1 23 23 23 -1 23 23 23 -1 23 23 23 -1 23 23 23 -1 23 23 23 -1 23 23 23 -1 23 23 23 -1 23 23 23 -1 23 23 23 -1 23 23 23 -1 23 23 23 -1 23 23 23 -1 23 23 23 -1 23 23 23 -1 23 23 23 -1 23 23 23 -1 23 23 23 -1 23 23 23 -1 23 23 23 -1 23 23 23 -1 23 23 23 -1 23 23 23 -1 23 23 23 -1 23 23 23 -1 23 23 23 -1" coordindex="15 6 13 -1 13 6 7 -1 13 7 11 -1 61 67 99 -1 15 17 6 -1 6 17 19 -1 6 19 25 -1 67 73 99 -1 99 73 81 -1 99 81 87 -1 99 93 100 -1 100 93 95 -1 100 95 97 -1 87 89 99 -1 99 89 91 -1 99 91 93 -1 25 29 6 -1 6 29 37 -1 6 37 43 -1 43 47 6 -1 6 47 53 -1 6 53 99 -1 99 53 57 -1 99 57 61 -1 28 27 32 -1 32 27 31 -1 32 31 34 -1 34 31 33 -1 34 33 36 -1 36 33 35 -1 36 35 40 -1 40 35 39 -1 40 39 42 -1 42 39 41 -1 42 41 46 -1 46 41 45 -1 46 45 50 -1 50 45 49 -1 50 49 52 -1 52 49 51 -1 52 51 56 -1 56 51 55 -1 56 55 60 -1 60 55 59 -1 60 59 64 -1 64 59 63 -1 64 63 66 -1 66 63 65 -1 66 65 70 -1 70 65 69 -1 70 69 72 -1 72 69 71 -1 72 71 76 -1 76 71 75 -1 76 75 78 -1 78 75 77 -1 78 77 80 -1 80 77 79 -1 27 28 12 -1 2 1 7 -1 7 1 27 -1 7 27 11 -1 11 27 12 -1 3 5 4 -1 3 4 2 -1 2 4 0 -1 2 0 1 -1 105 79 77 -1 105 77 104 -1 104 77 75 -1 104 75 71 -1 49 45 0 -1 0 45 41 -1 0 41 39 -1 71 69 104 -1 104 69 65 -1 104 65 63 -1 63 59 104 -1 104 59 55 -1 104 55 0 -1 0 55 51 -1 0 51 49 -1 39 35 0 -1 0 35 33 -1 0 33 1 -1 1 33 31 -1 1 31 27 -1 108 109 107 -1 108 107 104 -1 104 107 106 -1 104 106 105 -1 103 109 102 -1 102 109 108 -1 102 108 9 -1 9 108 4 -1 9 4 10 -1 10 4 5 -1 98 80 97 -1 97 80 79 -1 97 79 100 -1 100 79 105 -1 100 105 106 -1 85 108 83 -1 83 108 104 -1 83 104 21 -1 21 104 0 -1 21 0 23 -1 23 0 4 -1 23 4 85 -1 85 4 108 -1 7 6 8 -1 8 6 9 -1 8 9 10 -1 24 9 22 -1 22 9 6 -1 22 6 84 -1 84 6 99 -1 84 99 86 -1 86 99 102 -1 86 102 24 -1 24 102 9 -1 103 102 101 -1 101 102 99 -1 101 99 100 -1 101 107 103 -1 103 107 109 -1 100 106 101 -1 101 106 107 -1 2 7 3 -1 3 7 8 -1 3 8 5 -1 5 8 10 -1 83 84 85 -1 85 84 86 -1 85 86 23 -1 23 86 24 -1 23 24 21 -1 21 24 22 -1 21 22 83 -1 83 22 84 -1 98 97 95 -1 98 95 96 -1 96 95 93 -1 96 93 94 -1 94 93 91 -1 94 91 92 -1 92 91 89 -1 92 89 90 -1 90 89 87 -1 90 87 88 -1 88 87 81 -1 88 81 82 -1 82 81 73 -1 82 73 74 -1 74 73 67 -1 74 67 68 -1 68 67 61 -1 68 61 62 -1 62 61 57 -1 62 57 58 -1 58 57 53 -1 58 53 54 -1 54 53 47 -1 54 47 48 -1 48 47 43 -1 48 43 44 -1 44 43 37 -1 44 37 38 -1 38 37 29 -1 38 29 30 -1 30 29 25 -1 30 25 26 -1 26 25 19 -1 26 19 20 -1 20 19 17 -1 20 17 18 -1 18 17 15 -1 18 15 16 -1 16 15 13 -1 16 13 14 -1 14 13 11 -1 14 11 12 -1 78 80 98 -1 98 96 78 -1 78 96 94 -1 78 94 76 -1 76 94 92 -1 76 92 72 -1 72 92 90 -1 72 90 70 -1 70 90 88 -1 70 88 66 -1 12 28 14 -1 14 28 32 -1 14 32 16 -1 16 32 34 -1 16 34 18 -1 18 34 36 -1 52 48 50 -1 50 48 44 -1 50 44 46 -1 46 44 38 -1 46 38 42 -1 42 38 30 -1 42 30 40 -1 40 30 26 -1 40 26 36 -1 36 26 20 -1 36 20 18 -1 88 82 66 -1 66 82 74 -1 66 74 64 -1 64 74 68 -1 64 68 60 -1 60 68 62 -1 60 62 56 -1 56 62 58 -1 56 58 52 -1 52 58 54 -1 52 54 48 -1" solid="true" ccw="true" usegeocache="true" lit="true" colorpervertex="true" normalpervertex="true" normalupdatemode="fast" convex="true" colorindex="" texcoordindex="">
+              <coordinate point="-0.05076 -0.041 0 -0.05076 -0.041 0.045 -0.05076 -0.017 0.045 -0.05076 0.029 0.02 -0.05076 0.039 0 -0.05076 0.039 0.02 -0.03877 -0.017 0.012 -0.03877 -0.017 0.045 -0.03877 0.029 0.02 -0.03877 0.039 0.012 -0.03877 0.039 0.02 -0.03 -0.017 0.045 -0.03 0.005 0.045 -0.02966 -0.017 0.04053 -0.02966 0.005 0.04053 -0.02866 -0.017 0.03616 -0.02866 0.005 0.03616 -0.02703 -0.017 0.03199 -0.02703 0.005 0.03199 -0.02478 -0.017 0.0281 -0.02478 0.005 0.0281 -0.02277 0.007 0 -0.02277 0.007 0.012 -0.02277 0.027 0 -0.02277 0.027 0.012 -0.02199 -0.017 0.0246 -0.02199 0.005 0.0246 -0.01877 -0.041 0.045 -0.01877 0.005 0.045 -0.0187 -0.017 0.02155 -0.0187 0.005 0.02155 -0.01846 -0.041 0.04169 -0.01846 0.005 0.04169 -0.01755 -0.041 0.0385 -0.01755 0.005 0.0385 -0.01607 -0.041 0.03552 -0.01607 0.005 0.03552 -0.015 -0.017 0.01902 -0.015 0.005 0.01902 -0.01407 -0.041 0.03287 -0.01407 0.005 0.03287 -0.01161 -0.041 0.03064 -0.01161 0.005 0.03064 -0.01096 -0.017 0.01708 -0.01096 0.005 0.01708 -0.00879 -0.041 0.02889 -0.00879 0.005 0.02889 -0.00668 -0.017 0.01576 -0.00668 0.005 0.01576 -0.00569 -0.041 0.02769 -0.00569 0.005 0.02769 -0.00243 -0.041 0.02708 -0.00243 0.005 0.02708 -0.00224 -0.017 0.01509 -0.00224 0.005 0.01509 0.0009 -0.041 0.02708 0.0009 0.005 0.02708 0.00224 -0.017 0.01509 0.00224 0.005 0.01509 0.00416 -0.041 0.02769 0.00416 0.005 0.02769 0.00668 -0.017 0.01576 0.00668 0.005 0.01576 0.00726 -0.041 0.02889 0.00726 0.005 0.02889 0.01008 -0.041 0.03064 0.01008 0.005 0.03064 0.01096 -0.017 0.01708 0.01096 0.005 0.01708 0.01254 -0.041 0.03287 0.01254 0.005 0.03287 0.01454 -0.041 0.03552 0.01454 0.005 0.03552 0.015 -0.017 0.01902 0.015 0.005 0.01902 0.01602 -0.041 0.0385 0.01602 0.005 0.0385 0.01693 -0.041 0.04169 0.01693 0.005 0.04169 0.01724 -0.041 0.045 0.01724 0.005 0.045 0.0187 -0.017 0.02155 0.0187 0.005 0.02155 0.02124 0.007 0 0.02124 0.007 0.012 0.02124 0.027 0 0.02124 0.027 0.012 0.02199 -0.017 0.0246 0.02199 0.005 0.0246 0.02478 -0.017 0.0281 0.02478 0.005 0.0281 0.02703 -0.017 0.03199 0.02703 0.005 0.03199 0.02866 -0.017 0.03616 0.02866 0.005 0.03616 0.02966 -0.017 0.04053 0.02966 0.005 0.04053 0.03 -0.017 0.045 0.03 0.005 0.045 0.03723 -0.017 0.012 0.03723 -0.017 0.045 0.03723 0.029 0.02 0.03723 0.039 0.012 0.03723 0.039 0.02 0.04924 -0.041 0 0.04924 -0.041 0.045 0.04924 -0.017 0.045 0.04924 0.029 0.02 0.04924 0.039 0 0.04924 0.039 0.02"></coordinate>
+              <normal vector="-1 0 0 -0.98883 0 -0.14904 -0.98297 0 0.18375 -0.95557 0 -0.29475 -0.93247 0 0.36124 -0.90097 0 -0.43388 -0.85022 0 0.52643 -0.82624 0 -0.56332 -0.73901 0 0.6737 -0.73305 0 -0.68017 -0.62349 0 -0.78183 -0.60264 0 0.79802 -0.5 0 -0.86603 -0.44574 0 0.89516 -0.36534 0 -0.93087 -0.27366 0 0.96183 -0.22252 0 -0.97493 -0.09227 0 0.99573 -0.07473 0 -0.9972 0 -1 0 0 0 -1 0 0 1 0 0.47751 0.87862 0 1 0 0.07473 0 -0.9972 0.09227 0 0.99573 0.22252 0 -0.97493 0.27366 0 0.96183 0.36534 0 -0.93087 0.44574 0 0.89516 0.5 0 -0.86603 0.60264 0 0.79802 0.62349 0 -0.78183 0.73305 0 -0.68017 0.73901 0 0.6737 0.82624 0 -0.56332 0.85022 0 0.52643 0.90097 0 -0.43388 0.93247 0 0.36124 0.95557 0 -0.29475 0.98297 0 0.18375 0.98883 0 -0.14904 1 0 -0"></normal>
+            </indexedfaceset>
+          </shape>
+        </group>
+        <viewpoint def="Viewpoint1" description="Viewpoint1" position="0.0049 -0.00211 0.24108" fieldofview="0.7854" orientation="0,0,0,0" centerofrotation="0,0,0" znear="-1" zfar="-1"></viewpoint>
+        <transform def="dad_Background1" translation="0.26915 -0.16538 0.16248" render="true" bboxcenter="0,0,0" bboxsize="-1,-1,-1" center="0,0,0" rotation="0,0,0,0" scale="1,1,1" scaleorientation="0,0,0,0">
+          <background def="Background1" groundcolor="0 0.25098 0.50196" skycolor="0.50196 0.50196 1" groundangle="" skyangle="" backurl="" bottomurl="" fronturl="" lefturl="" righturl="" topurl=""></background>
+        </transform>
+        <navigationinfo def="NavigationInfo1" type="&quot;EXAMINE&quot;" headlight="true" typeparams="-0.4,60,0.05,2.8" explorationmode="all" avatarsize="0.25,1.6,0.75" speed="1" transitiontime="1" transitiontype="LINEAR "></navigationinfo>
+      </scene>
+<div id="x3dom_logdiv" class="x3dom-logContainer" style="clear: both; display: none;"><p style="margin: 0px; color: rgb(0, 255, 0);">INFO: Time for setup and init of GL element no. 0: 129 ms.</p><p style="margin: 0px; color: rgb(0, 255, 0);">INFO: activate FogBindable null/defaultX3DFogNode</p><p style="margin: 0px; color: rgb(0, 255, 0);">INFO: register FogBindable null/defaultX3DFogNode</p><p style="margin: 0px; color: rgb(0, 255, 0);">INFO: create new Fog for X3DFogNode-stack</p><p style="margin: 0px; color: rgb(0, 255, 0);">INFO: activate ViewpointBindable Viewpoint1/Viewpoint1</p><p style="margin: 0px; color: rgb(0, 255, 0);">INFO: activate first X3DViewpointNode for X3DViewpointNode-stack</p><p style="margin: 0px; color: rgb(0, 255, 0);">INFO: activate BackgroundBindable Background1/</p><p style="margin: 0px; color: rgb(0, 255, 0);">INFO: activate first X3DBackgroundNode for X3DBackgroundNode-stack</p><p style="margin: 0px; color: rgb(0, 255, 0);">INFO: System ready.</p><p style="margin: 0px; color: rgb(0, 255, 0);">INFO: activate NavigationInfoBindable NavigationInfo1/</p><p style="margin: 0px; color: rgb(0, 255, 0);">INFO: activate first X3DNavigationInfoNode for X3DNavigationInfoNode-stack</p><p style="margin: 0px; color: rgb(0, 255, 0);">INFO: activate EnvironmentBindable null/defaultX3DEnvironmentNode</p><p style="margin: 0px; color: rgb(0, 255, 0);">INFO: register EnvironmentBindable null/defaultX3DEnvironmentNode</p><p style="margin: 0px; color: rgb(0, 255, 0);">INFO: create new Environment for X3DEnvironmentNode-stack</p><p style="margin: 0px; color: rgb(0, 255, 0);">INFO: register NavigationInfoBindable NavigationInfo1/</p><p style="margin: 0px; color: rgb(0, 255, 0);">INFO: NavType: undefined</p><p style="margin: 0px; color: rgb(0, 255, 0);">INFO: Switch to examine mode.</p><p style="margin: 0px; color: rgb(0, 255, 0);">INFO: register BackgroundBindable Background1/</p><p style="margin: 0px; color: rgb(0, 255, 0);">INFO: register ViewpointBindable Viewpoint1/Viewpoint1</p><p style="margin: 0px; color: rgb(0, 255, 0);">INFO: Untitled2</p><p style="margin: 0px; color: rgb(0, 255, 0);">INFO: This Web3D Content was created with Vivaty Studio, a Web3D authoring tool www.mediamachines.com </p><p style="margin: 0px; color: rgb(0, 255, 0);">INFO: addEventListener for X3D.onDOMNodeInserted</p><p style="margin: 0px; color: rgb(0, 255, 0);">INFO: addEventListener for X3D.onDOMNodeRemoved</p><p style="margin: 0px; color: rgb(0, 255, 0);">INFO: webgl context found
+Vendor: Mozilla Google Inc., Renderer: Mozilla ANGLE (AMD Radeon (TM) R7 360 Series Direct3D11 vs_5_0 ps_5_0), Version: WebGL 1.0, ShadingLangV.: WebGL GLSL ES 1.0, MSAA samples: 4
+Extensions: ANGLE_instanced_arrays, EXT_blend_minmax, EXT_color_buffer_half_float, EXT_frag_depth, EXT_shader_texture_lod, EXT_texture_filter_anisotropic, EXT_disjoint_timer_query, OES_element_index_uint, OES_standard_derivatives, OES_texture_float, OES_texture_float_linear, OES_texture_half_float, OES_texture_half_float_linear, OES_vertex_array_object, WEBGL_color_buffer_float, WEBGL_compressed_texture_s3tc, WEBGL_debug_renderer_info, WEBGL_depth_texture, WEBGL_draw_buffers, WEBGL_lose_context, MOZ_WEBGL_lose_context, MOZ_WEBGL_compressed_texture_s3tc, MOZ_WEBGL_depth_texture</p><p style="margin: 0px; color: rgb(0, 255, 0);">INFO: Initializing X3DCanvas for [x3dom-someUniqueId-canvas]</p><p style="margin: 0px; color: rgb(0, 255, 0);">INFO: Creating canvas for (X)3D element...</p><p style="margin: 0px; color: rgb(0, 255, 0);">INFO: Found 1 X3D and nodes...</p><p style="margin: 0px; color: rgb(0, 255, 0);">INFO: X3DOM version 1.7.2, Revison <a href="https://github.com/x3dom/x3dom/tree/61a235203deb34329fe615cbbf21314db6ebf49f">61a235203deb34329fe615cbbf21314db6ebf49f</a>, Date Mon Dec 19 19:17:05 2016 +0100</p></div></body></html>

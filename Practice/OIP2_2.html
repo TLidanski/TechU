@@ -1,0 +1,334 @@
+<html>
+<head>
+	<title>CANVAS</title>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+	<body>
+		<form name = "DDD">
+			D1=<input type = "text" name = "D1" value = "30" id="D1" /><br>
+			D2=<input type = "text" name = "D2" value = "30" id="D2" /><br>
+			D3=<input type = "text" name = "D3" value = "42" id="D3" /><br>
+			D4=<input type = "text" name = "D4" value = "52" id="D4" /><br>
+			D5=<input type = "text" name = "D5" value = "15" id="D5" /><br>
+			D6=<input type = "text" name = "D6" value = "25" id="D6" /><br>
+			D7=<input type = "text" name = "D7" value = "30" id="D7" /><br>
+			D8=<input type = "text" name = "D8" value = "60" id="D8" /><br>
+			D9=<input type = "text" name = "D9" value = "30" id="D9" /><br>
+			D10=<input type = "text" name = "D10" value = "15" id="D10" /><br>
+			D11=<input type = "text" name = "D11" value = "86" id="D11" /><br>
+		</form>
+
+		<br />
+		<canvas id="myC1" width ="300" height = "300" name="generic_canvas" style="border:1px solid #000000;"></canvas>
+		<canvas id="myC2" width ="300" height = "300" style="border:1px solid #000000;"></canvas>
+		<br />
+		<canvas id="myC3" width ="300" height = "300" style="border:1px solid #000000;"></canvas>
+		<button>CLEAR</button>
+
+	<script>
+		var c1 = document.getElementById("myC1");
+		var ctx1 = c1.getContext("2d");
+
+		var c2 = document.getElementById("myC2");
+		var ctx2 = c2.getContext("2d");
+		
+		var c3 = document.getElementById("myC3");
+		var ctx3 = c3.getContext("2d");
+
+		ctx1.scale(2, 2);
+		ctx2.scale(2, 2);
+		ctx3.scale(2, 2);
+
+		var rect_height = 30;
+		var height_of_double_lines = 15;
+		var height_between_line_and_bottom = 30;
+		var height_between_rect_and_line = 15;
+		var height_to_line = height_between_line_and_bottom + height_between_rect_and_line;
+		var full_height_1 = rect_height + height_to_line;
+
+		var canvas_height = $('[name="generic_canvas"]').attr('height');
+		var canvas_width = $('[name="generic_canvas"]').attr('width');
+		var start_height = (Number($('[name="generic_canvas"]').attr('height')) - full_height_1)/8;
+		var start_width = canvas_width/4;
+
+		var rect_width = 30;
+		var rect_top_width = 52;
+
+		//**********************************//
+			//pitagorova teorema za trapeca, na kojto zasega dalshinata mu e hardcodenata
+			var rect_bot_width = 60; // harcodenatata stojnost
+			var other_hardcoded_value = 7; //pak za trapeca magii...
+			var third_hardcoded = 74; 
+			//treti trapec - magii... - tova e za parvata prekasnata -> koeto oznachava, che i tova se mesti, toest - fix fix
+		//**********************************//
+		var bottom_line_width = 86;
+
+		var rect_top_width_second = 42;
+		var bottom_full_width_second = 60;
+		var bottom_square_width_second = 30;
+		var bottom_square_height_second = 25;
+
+		var radius_of_circle = rect_width/2;
+
+		function dr1() {
+			ctx1.setLineDash([0]);
+			ctx1.lineWidth = "2";
+
+			ctx1.strokeRect(start_width - rect_width/2, start_height, rect_width, rect_height);
+			
+			ctx1.beginPath();
+
+			ctx1.moveTo(start_width - rect_top_width/2, start_height + rect_height);
+			ctx1.lineTo(start_width + rect_top_width/2, start_height + rect_height);
+		
+			ctx1.moveTo(start_width - rect_bot_width/2, start_height + rect_height + height_to_line - height_between_line_and_bottom);
+			ctx1.lineTo(start_width + rect_bot_width/2, start_height + rect_height + height_to_line - height_between_line_and_bottom);
+
+			ctx1.moveTo(start_width - bottom_line_width/2, start_height + rect_height + height_to_line);
+			ctx1.lineTo(start_width + bottom_line_width/2, start_height + rect_height + height_to_line);
+
+			ctx1.moveTo(start_width - bottom_line_width/2, start_height + rect_height + height_to_line);
+			ctx1.lineTo(start_width - bottom_line_width/2, start_height + rect_height + height_to_line - height_of_double_lines);
+			
+			ctx1.moveTo(start_width + bottom_line_width/2, start_height + rect_height + height_to_line);
+			ctx1.lineTo(start_width + bottom_line_width/2, start_height + rect_height + height_to_line - height_of_double_lines);
+
+			ctx1.moveTo(start_width - rect_top_width/2, start_height + rect_height);
+			ctx1.lineTo(start_width - bottom_line_width/2, start_height + rect_height + height_to_line - height_of_double_lines);
+
+			ctx1.moveTo(start_width + rect_top_width/2, start_height + rect_height);
+			ctx1.lineTo(start_width + bottom_line_width/2, start_height + rect_height + height_to_line - height_of_double_lines);
+
+			ctx1.stroke();
+
+			ctx1.beginPath();
+
+			ctx1.setLineDash([15]);
+
+			ctx1.moveTo(start_width - third_hardcoded/2, start_height + rect_height + height_to_line - bottom_square_height_second);
+			ctx1.lineTo(start_width + third_hardcoded/2, start_height + rect_height + height_to_line - bottom_square_height_second);
+
+			ctx1.stroke();
+
+			ctx1.beginPath();
+
+			ctx1.setLineDash([10,2,1,2]);
+			ctx1.lineWidth="1";
+			ctx1.moveTo(start_width, start_height);
+			ctx1.lineTo(start_width, start_height + full_height_1);
+
+			ctx1.stroke();
+
+
+		}
+
+		function dr2() {
+			ctx2.setLineDash([0]);
+			ctx2.lineWidth = "2";
+
+			ctx2.strokeRect(start_width - rect_width/2, start_height, rect_width, rect_height);
+
+			ctx2.beginPath();
+
+			ctx2.moveTo(start_width - rect_top_width_second/2, start_height + rect_height);
+			ctx2.lineTo(start_width + rect_top_width_second/2, start_height + rect_height);
+
+			ctx2.moveTo(start_width - bottom_full_width_second/2, start_height + full_height_1 - height_between_line_and_bottom);
+			ctx2.lineTo(start_width - rect_top_width_second/2, start_height + full_height_1 - height_between_line_and_bottom);
+			
+			ctx2.moveTo(start_width + bottom_full_width_second/2, start_height + full_height_1 - height_between_line_and_bottom);
+			ctx2.lineTo(start_width + rect_top_width_second/2, start_height + full_height_1 - height_between_line_and_bottom);
+
+			ctx2.moveTo(start_width - rect_top_width_second/2, start_height + rect_height);
+			ctx2.lineTo(start_width - rect_top_width_second/2, start_height + full_height_1 - height_between_line_and_bottom);
+
+			ctx2.moveTo(start_width + rect_top_width_second/2, start_height + rect_height);
+			ctx2.lineTo(start_width + rect_top_width_second/2, start_height + full_height_1 - height_between_line_and_bottom);
+
+			ctx2.moveTo(start_width + bottom_full_width_second/2, start_height + full_height_1 - height_between_line_and_bottom);
+			ctx2.lineTo(start_width + bottom_full_width_second/2, start_height + full_height_1);
+
+			ctx2.moveTo(start_width - bottom_full_width_second/2, start_height + full_height_1 - height_between_line_and_bottom);
+			ctx2.lineTo(start_width - bottom_full_width_second/2, start_height + full_height_1);
+
+			ctx2.moveTo(start_width - bottom_full_width_second/2, start_height + full_height_1);
+			ctx2.lineTo(start_width - bottom_full_width_second/2 + (bottom_full_width_second - bottom_square_width_second)/2, start_height + full_height_1);
+
+			ctx2.moveTo(start_width + bottom_full_width_second/2, start_height + full_height_1);
+			ctx2.lineTo(start_width + bottom_full_width_second/2 - (bottom_full_width_second - bottom_square_width_second)/2, start_height + full_height_1);
+
+			ctx2.moveTo(start_width + bottom_full_width_second/2 - (bottom_full_width_second - bottom_square_width_second)/2, 
+				start_height + full_height_1);
+			ctx2.lineTo(start_width + bottom_full_width_second/2 - (bottom_full_width_second - bottom_square_width_second)/2, 
+				start_height + full_height_1 - bottom_square_height_second);
+
+			ctx2.moveTo(start_width + bottom_full_width_second/2 - (bottom_full_width_second + bottom_square_width_second)/2, 
+				start_height + full_height_1);
+			ctx2.lineTo(start_width + bottom_full_width_second/2 - (bottom_full_width_second + bottom_square_width_second)/2, 
+				start_height + full_height_1 - bottom_square_height_second);
+
+			ctx2.moveTo(start_width + bottom_full_width_second/2 - (bottom_full_width_second + bottom_square_width_second)/2, 
+				start_height + full_height_1 - bottom_square_height_second);
+			ctx2.lineTo(start_width + bottom_full_width_second/2 - (bottom_full_width_second - bottom_square_width_second)/2, 
+				start_height + full_height_1 - bottom_square_height_second);
+
+			ctx2.moveTo(start_width - bottom_full_width_second/2, start_height + full_height_1 - height_of_double_lines);
+			ctx2.lineTo(start_width - bottom_full_width_second/2 + (bottom_full_width_second - bottom_square_width_second)/2,
+			 start_height + full_height_1 - height_of_double_lines);
+			
+			ctx2.moveTo(start_width + bottom_full_width_second/2, start_height + full_height_1 - height_of_double_lines);
+			ctx2.lineTo(start_width + bottom_full_width_second/2 - (bottom_full_width_second - bottom_square_width_second)/2,
+			 start_height + full_height_1 - height_of_double_lines);
+
+			ctx2.stroke();
+
+			ctx2.beginPath();
+
+			ctx2.setLineDash([10,2,1,2]);
+			ctx2.lineWidth="1";
+			ctx2.moveTo(start_width, start_height);
+			ctx2.lineTo(start_width, start_height + full_height_1 - bottom_square_height_second);
+
+			ctx2.stroke();
+
+		}
+
+		function dr3() {
+			ctx3.setLineDash([0]);
+			ctx3.lineWidth = "2";
+	
+			ctx3.beginPath();
+			ctx3.arc(start_width, start_height + bottom_full_width_second/2, radius_of_circle,0,2*Math.PI);
+			ctx3.stroke();
+
+			ctx3.strokeRect(start_width - bottom_line_width/2 + (bottom_line_width-rect_top_width)/2, start_height + (bottom_full_width_second - rect_top_width_second)/2, rect_top_width, rect_top_width_second);
+
+			ctx3.beginPath();
+			
+
+			ctx3.moveTo(start_width - bottom_line_width/2, start_height);
+			ctx3.lineTo(start_width + bottom_line_width/2, start_height);
+
+			ctx3.moveTo(start_width - bottom_line_width/2, start_height + bottom_full_width_second);
+			ctx3.lineTo(start_width + bottom_line_width/2, start_height + bottom_full_width_second);
+			
+			ctx3.moveTo(start_width - bottom_line_width/2, start_height);
+			ctx3.lineTo(start_width - bottom_line_width/2, start_height + (bottom_full_width_second - bottom_square_width_second)/2);
+
+			ctx3.moveTo(start_width - bottom_line_width/2, start_height + (bottom_full_width_second - bottom_square_width_second)/2 + bottom_square_width_second);
+			ctx3.lineTo(start_width - bottom_line_width/2, start_height + bottom_full_width_second);
+
+			ctx3.moveTo(start_width - bottom_line_width/2 + other_hardcoded_value, start_height + (bottom_full_width_second - bottom_square_width_second)/2);
+			ctx3.lineTo(start_width - bottom_line_width/2 + other_hardcoded_value, start_height + (bottom_full_width_second - bottom_square_width_second)/2 + bottom_square_width_second);
+
+			ctx3.moveTo(start_width - bottom_line_width/2 + other_hardcoded_value, start_height + (bottom_full_width_second - bottom_square_width_second)/2);
+			ctx3.lineTo(start_width - bottom_line_width/2, start_height + (bottom_full_width_second - bottom_square_width_second)/2);
+
+			ctx3.moveTo(start_width - bottom_line_width/2 + other_hardcoded_value, start_height + (bottom_full_width_second - bottom_square_width_second)/2 + bottom_square_width_second);
+			ctx3.lineTo(start_width - bottom_line_width/2, start_height + (bottom_full_width_second - bottom_square_width_second)/2 + bottom_square_width_second);
+
+			ctx3.moveTo(start_width + bottom_line_width/2, start_height);
+			ctx3.lineTo(start_width + bottom_line_width/2, start_height + (bottom_full_width_second - bottom_square_width_second)/2);
+
+			ctx3.moveTo(start_width + bottom_line_width/2, start_height + (bottom_full_width_second - bottom_square_width_second)/2 + bottom_square_width_second);
+			ctx3.lineTo(start_width + bottom_line_width/2, start_height + bottom_full_width_second);
+
+			ctx3.moveTo(start_width + bottom_line_width/2 - other_hardcoded_value, start_height + (bottom_full_width_second -bottom_square_width_second)/2);
+			ctx3.lineTo(start_width + bottom_line_width/2 - other_hardcoded_value, start_height + (bottom_full_width_second + bottom_square_width_second)/2);
+
+			ctx3.moveTo(start_width + bottom_line_width/2 - other_hardcoded_value, start_height + (bottom_full_width_second - bottom_square_width_second)/2);
+			ctx3.lineTo(start_width + bottom_line_width/2, start_height + (bottom_full_width_second - bottom_square_width_second)/2);
+			
+			ctx3.moveTo(start_width + bottom_line_width/2 - other_hardcoded_value, start_height + (bottom_full_width_second - bottom_square_width_second)/2 + bottom_square_width_second);
+			ctx3.lineTo(start_width + bottom_line_width/2, start_height + (bottom_full_width_second - bottom_square_width_second)/2 + bottom_square_width_second);
+			
+
+			ctx3.moveTo(start_width - bottom_line_width/2 + (bottom_line_width + rect_bot_width)/2, start_height);
+			ctx3.lineTo(start_width - bottom_line_width/2 + (bottom_line_width + rect_bot_width)/2, start_height + (bottom_full_width_second - rect_top_width_second)/2);
+
+			ctx3.moveTo(start_width - bottom_line_width/2 + (bottom_line_width - rect_bot_width)/2, start_height);
+			ctx3.lineTo(start_width - bottom_line_width/2 + (bottom_line_width - rect_bot_width)/2, start_height + (bottom_full_width_second - rect_top_width_second)/2);
+
+			ctx3.moveTo(start_width - bottom_line_width/2 + (bottom_line_width - rect_bot_width)/2, start_height + bottom_full_width_second);
+			ctx3.lineTo(start_width - bottom_line_width/2 + (bottom_line_width - rect_bot_width)/2, start_height + bottom_full_width_second - (bottom_full_width_second - rect_top_width_second)/2);
+
+			ctx3.moveTo(start_width - bottom_line_width/2 + (bottom_line_width + rect_bot_width)/2, start_height + bottom_full_width_second);
+			ctx3.lineTo(start_width - bottom_line_width/2 + (bottom_line_width + rect_bot_width)/2, start_height + bottom_full_width_second - (bottom_full_width_second - rect_top_width_second)/2);
+
+
+			ctx3.moveTo(start_width - bottom_line_width/2 + (bottom_line_width - rect_bot_width)/2, start_height + bottom_full_width_second - (bottom_full_width_second - rect_top_width_second)/2);
+			ctx3.lineTo(start_width - bottom_line_width/2 + (bottom_line_width + rect_bot_width)/2, start_height + bottom_full_width_second - (bottom_full_width_second - rect_top_width_second)/2);
+
+			ctx3.moveTo(start_width - bottom_line_width/2 + (bottom_line_width - rect_bot_width)/2, start_height + (bottom_full_width_second - rect_top_width_second)/2);
+			ctx3.lineTo(start_width - bottom_line_width/2 + (bottom_line_width + rect_bot_width)/2, start_height + (bottom_full_width_second - rect_top_width_second)/2);
+
+
+			ctx3.stroke();
+
+			ctx3.beginPath();
+			ctx3.lineWidth="1";
+			ctx3.setLineDash([10]);
+
+			ctx3.moveTo(start_width - bottom_line_width/2, start_height + (bottom_full_width_second - bottom_square_width_second)/2);
+			ctx3.lineTo(start_width + bottom_line_width/2, start_height + (bottom_full_width_second - bottom_square_width_second)/2);
+
+			ctx3.moveTo(start_width - bottom_line_width/2, start_height + (bottom_full_width_second - bottom_square_width_second)/2 + bottom_square_width_second);
+			ctx3.lineTo(start_width + bottom_line_width/2, start_height + (bottom_full_width_second - bottom_square_width_second)/2 + bottom_square_width_second);
+
+			ctx3.stroke();
+		
+			ctx3.beginPath();
+			
+			ctx3.setLineDash([10,2,1,2]);
+			ctx3.lineWidth="1";
+			
+			ctx3.moveTo(start_width, start_height);
+			ctx3.lineTo(start_width, start_height + bottom_full_width_second);
+
+			ctx3.moveTo(start_width - bottom_line_width/2, start_height + bottom_full_width_second/2);
+			ctx3.lineTo(start_width + bottom_line_width/2, start_height + bottom_full_width_second/2);
+
+			ctx3.stroke();
+
+		}
+
+		function clear() {
+			ctx1.clearRect(0, 0, canvas_height, canvas_width);
+			ctx2.clearRect(0, 0, canvas_height, canvas_width);
+			ctx3.clearRect(0, 0, canvas_height, canvas_width);
+		}
+
+		dr1();
+		dr2();
+		dr3();
+
+		$("button").click(function() {
+			clear();
+		});
+
+		$("input").change(function() {
+			rect_width = Number($("input")[0].value);
+			rect_height = Number($("input")[1].value);
+			rect_top_width_second = Number($("input")[2].value);
+			rect_top_width = Number($("input")[3].value);
+			height_between_rect_and_line = Number($("input")[4].value);
+			bottom_square_height_second = Number($("input")[5].value);
+			bottom_square_width_second = Number($("input")[6].value);
+			bottom_full_width_second = Number($("input")[7].value);
+			height_between_line_and_bottom = Number($("input")[8].value);
+			height_of_double_lines = Number($("input")[9].value);
+			bottom_line_width = Number($("input")[10].value);
+			
+			radius_of_circle = rect_width/2;
+			height_to_line = height_between_rect_and_line + height_between_line_and_bottom;
+			full_height_1 = rect_height + height_to_line;
+
+			clear();
+			dr1();
+			dr2();
+			dr3();
+		});
+
+	</script>
+</body>
+</head>
+</html>
