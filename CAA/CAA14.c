@@ -120,11 +120,17 @@ void deleteFront() {
 	if(isEmpty())
 		return;
 
-	newHead = listHead->next;
-	newHead->prev = NULL;
+	newHead = listHead;
+	listHead = listHead->next;
+	
+	if(listHead != NULL) {
+		listHead->prev = NULL;
+	} else {
+		listTail = NULL;
+	}
 
-	free(listHead);
-	listHead = newHead;
+	if(newHead != NULL)
+		free(newHead);
 }
 
 void deleteBack() {
@@ -133,11 +139,17 @@ void deleteBack() {
 	if(isEmpty())
 		return;
 
-	newTail = listTail->prev;
-	newTail->next = NULL;
+	newTail = listTail;
+	listTail = listTail->prev;
 
-	free(listTail);
-	listTail = newTail;
+	if(listTail != NULL) {
+		listTail->next = NULL;
+	} else {
+		listHead = NULL;
+	}
+
+	if(newTail != NULL)
+		free(newTail);
 }
 
 void deleteElement(listElement **element) {

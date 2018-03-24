@@ -1,35 +1,32 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
 #define DEQUE_SIZE 9
 
 typedef struct StaticDeque {
 	int size;
-	int frontLength;
-	int backLength;
+	int capacity;
+	int start;
+	int end;
 
 	int *elements;
 } StaticDeque;
 
 typedef struct Deque {
-	int size; 
-	int frontLength;
-	int backLength;
+	int data;
 
-	int *elements;
+	struct Deque *next;
+	struct Deque *prev;
 } Deque;
 
-Deque *deque;
+StaticDeque *staticDeque;
 
-void allocateStaticDequeMem(StaticDeque **deque);
-void pushStaticFront(StaticDeque **deque, int val);
-void pushStaticBack(StaticDeque **deque, int val);
-void printStatic(StaticDeque **deque);
-void popFrontStatic(StaticDeque **deque);
-void popBackStatic(StaticDeque **deque);
-void freeStaticDeque(StaticDeque **deque);
+Deque *head;
+Deque *tail;
 
-void initDeque();
+Deque* getNewElement(int data);
+bool isDequeEmpty();
 void pushFront(int val);
 void pushBack(int val);
 void popFront();
@@ -37,230 +34,284 @@ void popBack();
 void printDeque();
 void freeDeque();
 
+void initStaticDeque();
+void pushStaticFront(int val);
+void pushStaticBack(int val);
+void popStaticFront();
+void popStaticBack();
+void printStatic();
+void freeStatic();
+
 int main() {
 	int i;
-	StaticDeque *staticDeque;
+	pushFront(2);
+	pushFront(1);
+	pushBack(7); printDeque();
 
-	allocateStaticDequeMem(&staticDeque);
-
-	pushStaticFront(&staticDeque, 2);
-	pushStaticFront(&staticDeque, 1);
-
-	pushStaticBack(&staticDeque, 10);
-	pushStaticBack(&staticDeque, 11);
-
-	for (i = 0; i < 10; ++i) {
-		pushStaticBack(&staticDeque, i+30);
+	for(i = 0; i < 5; i++) {
+		popBack();
 	}
-	pushStaticFront(&staticDeque, 100);
 
-	printStatic(&staticDeque);
-	
-	popFrontStatic(&staticDeque);
-	
-	popBackStatic(&staticDeque);
-	popBackStatic(&staticDeque);
-
-
-	printStatic(&staticDeque);
-
-	freeStaticDeque(&staticDeque);
-
-	initDeque();
-	for(i = 1; i < 12; i++)
-		pushFront(i);
-
-	pushBack(70);
-	pushBack(77);
-	pushBack(21);
-
-	printDeque();
-
-	popBack();
-	popFront();
-
-	printDeque();
+	pushBack(10);printDeque();
 	freeDeque();
 
+	// initStaticDeque();
+
+	// pushStaticFront(1);
+	// pushStaticFront(2);
+
+	// pushStaticBack(21);
+	// pushStaticBack(33);
+
+	// printStatic();
+
+	// for(i = 0; i < 7; i++) 
+	// 	popStaticBack();	
+	
+	// printStatic();
+
+	// pushStaticBack(245);
+	// pushStaticFront(300);
+	// pushStaticBack(212);
+	// pushStaticBack(277);
+	// pushStaticFront(10);
+	// pushStaticFront(-23);
+ // 	printStatic();
+	// popStaticFront();popStaticFront();popStaticFront();
+
+	// printStatic();
+	// pushStaticFront(10);
+	// pushStaticBack(77);
+	// pushStaticFront(23);
+	// pushStaticBack(79);
+
+	// popStaticBack();
+	// pushStaticBack(365);
+
+	// printStatic();
+
+	// pushStaticBack(4000);
+	// pushStaticBack(899);
+
+	// printStatic();
+	// for(i = 0; i < 9; i++) 
+	// 	popStaticFront();
+	// pushStaticBack(100);
+	// pushStaticFront(1);
+	// printStatic();
+
+	// freeStatic();
 	return 0;
 }
 
-void allocateStaticDequeMem(StaticDeque **deque) {
-	*deque = (StaticDeque*)malloc(sizeof(StaticDeque));
+Deque* getNewElement(int data) {
+	Deque *newElement = (Deque*)malloc(sizeof(Deque));
 
-	(*deque)->size = DEQUE_SIZE;
-	(*deque)->frontLength = 0;
-	(*deque)->backLength = 0;
+	newElement->data = data;
+	newElement->next = newElement->prev = NULL;
 
-	(*deque)->elements = (int*)calloc((*deque)->size, sizeof(int));
+	return newElement;
 }
 
-void pushStaticFront(StaticDeque **deque, int val) {
-	int i;
-	if(((*deque)->frontLength + (*deque)->backLength) < DEQUE_SIZE) {
-
-		for (i = (DEQUE_SIZE - (*deque)->backLength) - 1; i >= 0 ; i--)
-	    	(*deque)->elements[i+1] = (*deque)->elements[i];
-
-	    (*deque)->elements[0] = val;
-
-	    ((*deque)->frontLength < 0) ? (*deque)->frontLength = 1 : (*deque)->frontLength++;
-	} else {
-		printf("Deque is full!\n");
-	}
-}
-
-void pushStaticBack(StaticDeque **deque, int val) {
-	int i;
-	if((*deque)->frontLength + (*deque)->backLength < DEQUE_SIZE) {
-
-		for (i = (*deque)->frontLength + 1; i < DEQUE_SIZE; i++)
-	    	(*deque)->elements[i-1] = (*deque)->elements[i];
-
-	    (*deque)->elements[DEQUE_SIZE - 1] = val;
-
-	    ((*deque)->backLength < 0) ? (*deque)->backLength = 1 : (*deque)->backLength++;
-	} else {
-		printf("Deque is full!\n");
-	}
-}
-
-void printStatic(StaticDeque **deque) {
-	int i;
-	for (i = 0; i < DEQUE_SIZE; ++i) {
-		printf("Value at index [%d] equals:  %d\n", i+1, (*deque)->elements[i]);
-	}
-}
-
-void popFrontStatic(StaticDeque **deque) {
-	int i;
-	if(((*deque)->frontLength + (*deque)->backLength) != 0 && (*deque)->frontLength > 0) {
-
-		for(i = 0; i < (*deque)->frontLength - 2; i++)
-			(*deque)->elements[i] = (*deque)->elements[i+1];
-
-		(*deque)->elements[(*deque)->frontLength - 1] = 0;
-		(*deque)->frontLength--;
-	} else {
-		printf("Deque is empty!\n");
-	}
-}
-
-void popBackStatic(StaticDeque **deque) {
-	int i;
-	if(((*deque)->frontLength + (*deque)->backLength) != 0 && (*deque)->backLength > 0) {
-
-		for(i = DEQUE_SIZE - 1; i > DEQUE_SIZE - (*deque)->backLength; i--)
-			(*deque)->elements[i] = (*deque)->elements[i-1];
-		
-		(*deque)->elements[DEQUE_SIZE - (*deque)->backLength] = 0;
-		(*deque)->backLength--;
-	} else {
-		printf("Deque is empty!\n");
-	}
-}
-
-void freeStaticDeque(StaticDeque **deque) {
-	free((*deque)->elements);
-	free(*deque);
-}
-
-void initDeque() {
-	deque = (Deque*)malloc(sizeof(Deque));
-
-	deque->size = DEQUE_SIZE;
-	deque->frontLength = 0;
-	deque->backLength = 0;
-
-	deque->elements = (int*)calloc(deque->size, sizeof(int));
+bool isDequeEmpty() {
+	return head == NULL;
 }
 
 void pushFront(int val) {
-	int i;
+	Deque *newElement = getNewElement(val);
 
-	if((deque->frontLength + deque->backLength) < DEQUE_SIZE) {
-
-		for (i = (deque->size - deque->backLength) - 1; i >= 0 ; i--)
-	    	deque->elements[i+1] = deque->elements[i];
-
-	    deque->elements[0] = val;
-
-	    (deque->frontLength < 0) ? deque->frontLength = 1 : deque->frontLength++;
+	if(isDequeEmpty()) {
+		head = tail = newElement;
 	} else {
-		deque->size++;
-		deque->elements = (int*)realloc(deque->elements, deque->size * sizeof(int));
+		head->prev = newElement;
 
-		for (i = (deque->size - deque->backLength) - 1; i >= 0 ; i--)
-	    	deque->elements[i+1] = deque->elements[i];
-
-	    deque->elements[0] = val;
-	    
-	    (deque->frontLength < 0) ? deque->frontLength = 1 : deque->frontLength++;
+		newElement->next = head;
+		head = newElement;
 	}
 }
 
 void pushBack(int val) {
-	int i;
+	Deque *newElement = getNewElement(val);
 
-	if((deque->frontLength + deque->backLength) < DEQUE_SIZE) {
-
-		for (i = deque->frontLength + 1; i < deque->size; i++)
-	    	deque->elements[i-1] = deque->elements[i];
-
-	    deque->elements[deque->size - 1] = val;
-
-	    (deque->backLength < 0) ? deque->backLength = 1 : deque->backLength++;
+	if(isDequeEmpty()) {
+		head = tail = newElement;
 	} else {
-		deque->size++;
-		deque->elements = (int*)realloc(deque->elements, deque->size * sizeof(int));
+		tail->next = newElement;
 
-	    deque->elements[deque->size - 1] = val;
-
-	    (deque->backLength < 0) ? deque->backLength = 1 : deque->backLength++;
+		newElement->prev = tail;
+		tail = newElement;
 	}
 }
 
 void popFront() {
-	int i;
-	if(deque->size > 1) {
-		int *temp = (int*)calloc(deque->size - 1, sizeof(int));
+	Deque *newHead;
 
-		for (i = 1; i < deque->size; ++i) 
-			temp[i-1] = deque->elements[i];
-
-		deque->frontLength--;
-		deque->size--;
-
-		free(deque->elements);
-		deque->elements = temp;
+	if(isDequeEmpty()) {
+		printf("Deque empty!\n");
+		return;
 	}
+
+	newHead = head;
+	head = head->next;
+
+	if(head != NULL) { 
+		head->prev = NULL;
+	} else {
+		tail = NULL;
+	}
+
+	if(newHead != NULL)
+		free(newHead);
 }
 
 void popBack() {
-	int i;
-	if(deque->size > 1) {
-		int *temp = (int*)calloc(deque->size - 1, sizeof(int));
+	Deque *newTail;
 
-		for (i = 0; i < deque->size - 1; ++i) 
-			temp[i] = deque->elements[i];
-
-		deque->backLength--;
-		deque->size--;
-
-		free(deque->elements);
-		deque->elements = temp;
+	if(isDequeEmpty()) {
+		printf("Deque empty!\n");
+		return;
 	}
+
+	newTail = tail;
+	tail = tail->prev;
+
+	if(tail != NULL) {
+		tail->next = NULL;
+	} else {
+		head = NULL;
+	}
+	
+	if(newTail != NULL)
+		free(newTail);
 }
 
 void printDeque() {
-	int i;
-	for (i = 0; i < deque->size; ++i) {
-		printf("DYNAMIC DEQUE VALUE at index [%d]  IS  (%d)\n", i+1, deque->elements[i]);
+	if(isDequeEmpty()) {
+		printf("List Empty\n");
+	} else {
+		Deque *element = head;
+
+		while(element != NULL) {
+			printf("DATA - %d\n", element->data);
+
+			element = element->next;
+		}
+		printf("\n\n");
 	}
-	printf("\n\n\n");
 }
 
 void freeDeque() {
-	free(deque->elements);
-	free(deque);
+	Deque *currPtr = head;
+
+	if(isDequeEmpty())
+		return;
+
+	while((currPtr = head) != NULL) {
+		head = head->next;
+
+		//printf("FREEING KEY - %d - DATA - %d\n", currPtr->key, currPtr->data);
+		free(currPtr);
+		currPtr = NULL;
+	}
+	printf("List freed\n");
+}
+
+void initStaticDeque() {
+	staticDeque = (StaticDeque*)malloc(sizeof(StaticDeque));
+
+	staticDeque->size = 0;
+	staticDeque->start = staticDeque->end = 0;
+	staticDeque->capacity = DEQUE_SIZE;
+
+	staticDeque->elements = (int*)calloc(staticDeque->capacity, sizeof(int));
+}
+
+void pushStaticFront(int val) {
+	int i;
+	if(staticDeque->size < staticDeque->capacity) {
+		
+		if(staticDeque->size > 0 && staticDeque->start == 0)
+			staticDeque->end++;
+		staticDeque->size++;
+
+		if(staticDeque->start == 0) {
+
+			for (i = staticDeque->end; i > staticDeque->start; --i) 
+				staticDeque->elements[i] = staticDeque->elements[i-1];
+			
+		} else {
+			staticDeque->start--;
+		}
+		
+		staticDeque->elements[staticDeque->start] = val;
+
+	} else {
+		printf("Deque full!\n");
+	}
+}
+
+void pushStaticBack(int val) {
+	int i;
+	if(staticDeque->size < staticDeque->capacity) {
+
+		if(staticDeque->end == staticDeque->capacity - 1) {
+			
+			for(i = 0; i < staticDeque->capacity; i++)
+				staticDeque->elements[i] = staticDeque->elements[i+1];
+
+			staticDeque->start--;
+		} else {
+			if(staticDeque->size > 0)
+				staticDeque->end++;
+		}
+
+		staticDeque->elements[staticDeque->end] = val;
+
+		staticDeque->size++;
+	}
+}
+
+void popStaticFront() {
+	if(staticDeque->size > 0) {
+		staticDeque->elements[staticDeque->start] = 0;
+
+		staticDeque->start++;
+		staticDeque->size--;
+
+		if(staticDeque->size == 0)
+			staticDeque->start = staticDeque->end = 0;
+
+	} else {
+		printf("Deque is empty!\n"); 
+	}
+}
+
+void popStaticBack() {
+	if(staticDeque->size > 0) {
+		staticDeque->elements[staticDeque->end] = 0;
+
+		staticDeque->end--;
+		staticDeque->size--;
+
+		if(staticDeque->size == 0)
+			staticDeque->start = staticDeque->end = 0;		
+	} else {
+		printf("Deque is empty!\n");
+	}
+}
+
+void printStatic() {
+	int i;
+	for (i = 0; i < DEQUE_SIZE; ++i) {
+		printf("Value at index [%d] is (%d)\n", i+1, staticDeque->elements[i]);
+	}
+	printf("\n\n");
+} 
+
+void freeStatic() {
+	free(staticDeque->elements);
+	staticDeque->elements = NULL;
+
+	free(staticDeque);
+	staticDeque = NULL;
 }
