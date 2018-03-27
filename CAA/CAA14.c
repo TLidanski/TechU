@@ -78,7 +78,7 @@ listElement* getElement(int key) {
 	listElement *currPtr;
 
 	if(isEmpty())
-		return;
+		return NULL;
 
 	for (currPtr = listHead; currPtr != NULL; currPtr = currPtr->next)	{
 		if(currPtr->key == key) 
