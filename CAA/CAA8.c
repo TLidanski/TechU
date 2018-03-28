@@ -26,5 +26,6 @@ int main() {
 
 	printDescending(size, &arr);
 
+	free(arr);
 	return 0;
 }
