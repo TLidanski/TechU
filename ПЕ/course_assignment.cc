@@ -7,6 +7,9 @@
 #include <memory>
 #include <initializer_list>
 #include <functional>
+#include <chrono>
+#include <ctime>
+#include <typeinfo>
 
 #include "cereal/cereal.hpp"
 #include "cereal/access.hpp"
@@ -18,6 +21,7 @@
 
 #define MANUFACTURER_FILE "manufacturers.json"
 #define OPTICS_FILE "optics.json"
+#define RECEIPT_FILE "receipt.json"
  
 using namespace std;
 using namespace cereal;
@@ -79,6 +83,10 @@ public:
 	double getPrice() {
 		return this->price;
 	}
+
+	friend ostream& operator << (ostream& out, Optic &optic) {
+		out << "Optics Type: " << optic.type << " Width: " << optic.width << " Size: " << optic.size << " Optics Material: " << optic.material << " Price: " << optic.price << endl << endl;
+	}
 };
 
 class OpticsManufacturer {
@@ -124,9 +132,17 @@ public:
 		availableOptics.push_back(optic);
 	}
 
-	friend ostream& operator << (ostream& out, OpticsManufacturer &man) {
-		out << "Company Bulstat: " << man.bulstat << endl << "Company Name: " << man.name << endl << "Address" << man.address << endl << "Phone Number" << man.phoneNumber << endl;
+	Optic getAvailableOptic(int index) {
+		list<Optic>::iterator it = availableOptics.begin();
+    	advance(it, index);
 
+		return *it;
+	}
+
+	friend ostream& operator << (ostream& out, OpticsManufacturer &man) {
+		out << "Company Bulstat: " << man.bulstat << endl << "Company Name: " << man.name << endl << "Address: " << man.address << endl << "Phone Number: " << man.phoneNumber << endl << endl;
+
+		out << "Available Optics: " << endl;
 		for (list<Optic>::iterator i = man.availableOptics.begin(); i != man.availableOptics.end(); ++i) {
 			
 			out << "Optics Type: " << i->getType() << endl << "Width: " << i->getWidth() << endl << "Size: " << i->getSize() << endl << "Optics Material: " << i->getMaterial() << endl << "Price: " << i->getPrice() << endl << endl;
@@ -149,10 +165,15 @@ public:
 		fstream file;
 		file.open(fileName.c_str(), ios::in);
 
+		bool isEmpty = file.peek() == ifstream::traits_type::eof();
+
 		if(file.is_open()) {
-			{
-				JSONInputArchive archiveIn(file);
-				archiveIn(collection);
+			
+			if(!isEmpty) {
+				{
+					JSONInputArchive archiveIn(file);
+					archiveIn(collection);
+				}
 			}
 
 			file.close();
@@ -182,6 +203,26 @@ public:
 		}
 		
 	}
+
+	template <typename T, typename A>
+	void printVector(vector<T, A> collection) {
+
+		for(int i = 0; i < collection.size(); ++i) {
+			cout << i+1 << ". " << endl << collection[i] ;
+		}
+	}
+
+	template <typename T>
+	T getValidatedInput(const char* prompt, function <bool(T)> validator) {
+		T tmp;
+
+		do {
+			cout << prompt << endl;
+			cin >> tmp;
+		} while(!validator(tmp));
+
+		return tmp;
+	}
 };
 
 class MenuItem {
@@ -203,6 +244,9 @@ public:
 };
 
 class RegisterManufacturerItem : public MenuItem {
+private:
+	IOUtils io;
+	
 public:
 	RegisterManufacturerItem(const char* title): MenuItem(title) {}
 
@@ -220,8 +264,9 @@ public:
 		cout << "Enter an address" << endl;
 		getline(cin, address);
 
-		cout << "Enter a phone number" << endl;
-		getline(cin, phone);
+		phone = io.getValidatedInput<string>("Enter a phone number", [](string arg)->bool {
+			return arg.find_first_not_of("0123456789") == string::npos;
+		});
 
 		OpticsManufacturer manufacturer(bulstat, name, address, phone);		
 
@@ -230,6 +275,9 @@ public:
 };
 
 class RegisterOpticItem : public MenuItem {
+private:
+	IOUtils io;
+
 public:
 	RegisterOpticItem(const char* title): MenuItem(title) {}
 
@@ -240,21 +288,25 @@ public:
 
 		cin.ignore(1, '\n');
 
-		cout << "Enter the optic size" << endl;
+		cout << "Enter the optic type" << endl;
 		getline(cin, type);
 
-		cout << "Enter the width" << endl;
-		cin >> width;
+		width = io.getValidatedInput<int>("Enter the width", [](int arg)->bool {
+			return arg > 0;
+		});
 
-		cout << "Enter the size" << endl;
-		cin >> size;
+		size = io.getValidatedInput<int>("Enter the size", [](int arg)->bool {
+			return arg > 0;
+		});
+		
 		cin.ignore(1, '\n');
 
 		cout << "Enter the material" << endl;
 		getline(cin, material);
 
-		cout << "Enter the price" << endl;
-		cin >> price;
+		price = io.getValidatedInput<double>("Enter the price", [](double arg)->bool {
+			return arg > 0;
+		});
 
 		Optic optic(type, width, size, material, price);
 
@@ -262,14 +314,87 @@ public:
 	}
 };
 
+class OrderItem : public MenuItem {
+private:
+	IOUtils io;
+	vector<Optic> orderedOptics;
+
+public:
+	OrderItem(const char* title): MenuItem(title) {}
+
+	void execute() {
+		int manufacturerIndex, opticIndex;
+
+		io.printVector(globalManufacturers);		
+
+		manufacturerIndex = io.getValidatedInput<int>("Choose a manufacturer", [](int arg)->bool {
+			return arg >= 0 && arg <= globalManufacturers.size();
+		});
+		
+
+		do {
+			cout << globalManufacturers[manufacturerIndex-1];
+
+			opticIndex = io.getValidatedInput<int>("Choose an optic", [](int arg)->bool {
+				return arg >= 0 && arg <= globalOptics.size();
+			});
+			
+			
+			if(opticIndex != 0)
+				orderedOptics.push_back(globalManufacturers[manufacturerIndex-1].getAvailableOptic(opticIndex-1));
+
+			cout << "To Exit Press 0" << endl;
+		} while (opticIndex != 0);	
+
+		double total = 0;
+		for(Optic optic : orderedOptics) {
+			cout << optic;
+
+			total += optic.getPrice();
+		}
+		cout << "TOTAL: " << total << endl;
+
+		if(!orderedOptics.empty())
+			io.writeToFile(RECEIPT_FILE, orderedOptics);
+	}
+};
+
+class AddOpticToManufacturerItem : public MenuItem {
+private:
+	IOUtils io;
+
+public:
+	AddOpticToManufacturerItem(const char* title): MenuItem(title) {}
+
+	void execute() {
+		int manufacturerIndex, opticIndex;
+
+		io.printVector(globalManufacturers);
+
+		manufacturerIndex = io.getValidatedInput<int>("Choose a manufacturer", [](int arg)->bool {
+			return arg >= 0 && arg <= globalManufacturers.size();
+		});
+
+		io.printVector(globalOptics);
+
+		opticIndex = io.getValidatedInput<int>("Choose an optic", [](int arg)->bool {
+			return arg >= 0 && arg <= globalOptics.size();
+		});
+
+		globalManufacturers[manufacturerIndex-1].addOptic(globalOptics[opticIndex-1]);
+	}
+};
+
 class ExitItem : public MenuItem {
+private:
+	IOUtils io;
+
 public:
 	ExitItem(const char* title): MenuItem(title) {}
 
 	void execute() {
-		IOUtils io;
-
 		io.writeToFile(MANUFACTURER_FILE, globalManufacturers);
+		io.writeToFile(OPTICS_FILE, globalOptics);
 	}
 };
 
@@ -306,7 +431,7 @@ public:
 			cin >> i;
 
 			items[i-1].get().execute();
-		} while (i != 5);
+		} while (typeid(items[i-1].get()).name() != typeid(ExitItem).name());
 	}
 
 	~Menu() {}
@@ -317,16 +442,21 @@ int main() {
 
 	RegisterManufacturerItem registerManufacturer("Register Manufacturer");
 	RegisterOpticItem registerOptic("Register Optic");
+	OrderItem orderOptic("Order an Optic");
+	AddOpticToManufacturerItem addOptic("Add an Optic to Manufacturer");
 
 	ExitItem exit("Exit");
 	
 	Menu<MenuItem> menu({
 		registerManufacturer, 
 		registerOptic,
+		orderOptic,
+		addOptic,
 		exit
 	});
 
 	io.readFile(MANUFACTURER_FILE, globalManufacturers);
+	io.readFile(OPTICS_FILE, globalOptics);
 
 	menu.start();
 
