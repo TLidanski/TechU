@@ -61,7 +61,7 @@ public:
 
 	template<class Archive>
 	void serialize(Archive & archive) {
-    	archive(type, width, size, material, price); 
+		archive(type, width, size, material, price); 
 	}
 
 	string getType() {
@@ -109,7 +109,7 @@ public:
 
 	template<class Archive>
 	void serialize(Archive & archive) {
-    	archive(bulstat, name, address, phoneNumber, availableOptics); 
+		archive(bulstat, name, address, phoneNumber, availableOptics); 
 	}
 
 	string getBulstat() {
@@ -134,7 +134,7 @@ public:
 
 	Optic getAvailableOptic(int index) {
 		list<Optic>::iterator it = availableOptics.begin();
-    	advance(it, index);
+		advance(it, index);
 
 		return *it;
 	}
@@ -246,7 +246,7 @@ public:
 class RegisterManufacturerItem : public MenuItem {
 private:
 	IOUtils io;
-	
+
 public:
 	RegisterManufacturerItem(const char* title): MenuItem(title) {}
 
