@@ -1,5 +1,6 @@
 #include "bubble_sort.h"
 #include "swap.h"
+#include "args.h"
 
 void bubbleSort(int arr[], int arrSize) { 
 	int i, j; 
@@ -12,4 +13,8 @@ void bubbleSort(int arr[], int arrSize) {
 				swap(&arr[j], &arr[j+1]);
 		}
 	}
+}
+
+void* bubbleSortWrapper(void *args) {
+	bubbleSort(((ArrayArgs*)args)->arr, ((ArrayArgs*)args)->size);
 }

@@ -1,5 +1,5 @@
 #include "shell_sort.h"
-#include "swap.h"
+#include "args.h"
 
 void shellSort(int arr[], int arrSize) { 
 	int i, gap;
@@ -17,4 +17,8 @@ void shellSort(int arr[], int arrSize) {
 		} 
 	} 
 	 
+}
+
+void* shellSortWrapper(void *args) {
+	shellSort(((ArrayArgs*)args)->arr, ((ArrayArgs*)args)->size);
 }

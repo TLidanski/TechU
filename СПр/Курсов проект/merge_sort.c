@@ -1,4 +1,5 @@
 #include "merge_sort.h"
+#include "args.h"
 
 void merge(int arr[], int l, int m, int r) { 
 	int i, j, k; 
@@ -66,4 +67,8 @@ void mergeSort(int arr[], int l, int r) {
   
 		merge(arr, l, m, r); 
 	} 
+}
+
+void* mergeSortWrapper(void *args) {
+	mergeSort(((ArrayArgs*)args)->arr, ((ArrayArgs*)args)->firstEle, ((ArrayArgs*)args)->lastEle);
 }

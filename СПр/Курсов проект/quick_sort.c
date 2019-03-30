@@ -1,5 +1,6 @@
 #include "quick_sort.h"
 #include "swap.h"
+#include "args.h"
 
 int partition(int arr[], int firstEle, int lastEle) {
 
@@ -26,4 +27,8 @@ void quickSort(int arr[], int firstEle, int lastEle) {
 		quickSort(arr, firstEle, pi - 1); 
 		quickSort(arr, pi + 1, lastEle); 
 	} 
-} 
+}
+
+void* quickSortWrapper(void *args) {
+	quickSort(((ArrayArgs*)args)->arr, ((ArrayArgs*)args)->firstEle, ((ArrayArgs*)args)->lastEle);
+}
