@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <fcntl.h>
 #include <unistd.h>
 #include <time.h>
 #include <pthread.h>
@@ -29,35 +28,43 @@ typedef struct BenchmarkResult {
 
 } BenchmarkResult;
 
-typedef struct BenchmarkArgs {
-	char *sourceFile;
-	unsigned long arrSize;
-	char *sortName;
-	int size;
-
-	void (*sortFunc)(void *args);
-
-} BenchmarkArgs;
-
 void loadArrayFromFile(char *fileName, unsigned long arrSize, int *destination);
-BenchmarkResult sort(char *fileName, unsigned long arrSize, char *sortName, void (*sortFunc)(void *args));
-void writeSortedArrToFile(int *sourceArr, unsigned long arrSize, BenchmarkResult result);
+BenchmarkResult *sort(char *fileName, unsigned long arrSize, char *sortName, void (*sortFunc)(void *args));
+void writeSortedArrToFile(int *sourceArr, unsigned long arrSize, BenchmarkResult *result);
 void *startBenchmark(void *args);
+
+BenchmarkArgs *newBenchmarkArgs(char *fileName, unsigned long arrSize, char *sortName, void (*sortFunc)(void *args));
 ArrayArgs *newArrayArgs(int *arr, int size);
 
 int main() {
-	// BenchmarkArgs qSortArgs, bSortArgs, sSortArgs, mSortArgs;
-	// BenchmarkResult qSortResult, bSortResult, sSortResult, mSortResult;
+	BenchmarkArgs *qSortArgs, *bSortArgs, *sSortArgs, *mSortArgs;
+	void *qSortResult; void *bSortResult; void *sSortResult; void *mSortResult;
+	pthread_t quickSortThread, bubbleSortThread, shellSortThread, mergeSortThread;
 
-	BenchmarkResult r1 = sort(DATA_SOURCE, MIN_SIZE, QUICK_SORT, quickSortWrapper);
-	BenchmarkResult r2 = sort(DATA_SOURCE, MIN_SIZE, BUBBLE_SORT, bubbleSortWrapper);
-	BenchmarkResult r3 = sort(DATA_SOURCE, MIN_SIZE, SHELL_SORT, shellSortWrapper);
-	BenchmarkResult r4 = sort(DATA_SOURCE, MIN_SIZE, MERGE_SORT, mergeSortWrapper);
+	qSortArgs = newBenchmarkArgs(DATA_SOURCE, MIN_SIZE, QUICK_SORT, quickSortWrapper);
+	bSortArgs = newBenchmarkArgs(DATA_SOURCE, MIN_SIZE, BUBBLE_SORT, bubbleSortWrapper);
+	sSortArgs = newBenchmarkArgs(DATA_SOURCE, MIN_SIZE, SHELL_SORT, shellSortWrapper);
+	mSortArgs = newBenchmarkArgs(DATA_SOURCE, MIN_SIZE, MERGE_SORT, mergeSortWrapper);
+	
+	pthread_create(&quickSortThread, NULL, startBenchmark, (void*)qSortArgs);
+	pthread_create(&mergeSortThread, NULL, startBenchmark, (void*)mSortArgs);
+	pthread_create(&bubbleSortThread, NULL, startBenchmark, (void*)bSortArgs);
+	pthread_create(&shellSortThread, NULL, startBenchmark, (void*)sSortArgs);
+	
+	pthread_join(quickSortThread, &qSortResult);
+	pthread_join(bubbleSortThread, &bSortResult);
+	pthread_join(shellSortThread, &sSortResult);
+	pthread_join(mergeSortThread, &mSortResult);
 
-	printf("Sort Type - %s\nTime - %f\n", r1.sortType, r1.timeToComplete);
-	printf("Sort Type - %s\nTime - %f\n", r2.sortType, r2.timeToComplete);
-	printf("Sort Type - %s\nTime - %f\n", r3.sortType, r3.timeToComplete);
-	printf("Sort Type - %s\nTime - %f\n", r4.sortType, r4.timeToComplete);
+	BenchmarkResult *qSort = qSortResult; BenchmarkResult *bSort = bSortResult;
+	BenchmarkResult *sSort = sSortResult; BenchmarkResult *mSort = mSortResult;
+
+	printf("Sort Type - %s\nTime - %f\n", qSort->sortType, qSort->timeToComplete);
+	printf("Sort Type - %s\nTime - %f\n", bSort->sortType, bSort->timeToComplete);
+	printf("Sort Type - %s\nTime - %f\n", sSort->sortType, sSort->timeToComplete);
+	printf("Sort Type - %s\nTime - %f\n", mSort->sortType, mSort->timeToComplete);
+
+	free(qSortArgs); free(bSortArgs); free(sSortArgs); free(mSortArgs);
 	return 0;
 }
 
@@ -77,25 +84,20 @@ void loadArrayFromFile(char *fileName, unsigned long arrSize, int *destination) 
 	fclose(fp);
 }
 
-BenchmarkResult sort(char *fileName, unsigned long arrSize, char *sortName, void (*sortFunc)(void *args)) {
-	BenchmarkResult result;
+BenchmarkResult *sort(char *fileName, unsigned long arrSize, char *sortName, void (*sortFunc)(void *args)) {
+	BenchmarkResult *result = (BenchmarkResult*)malloc(sizeof(BenchmarkResult));
 
 	int *arr = (int*)calloc(arrSize, sizeof(int));
 	loadArrayFromFile(fileName, arrSize, arr);
 
 	ArrayArgs *args = newArrayArgs(arr, arrSize);	
 
-	// pthread_create(&quickSortThread, NULL, quickSortWrapper, (void*)args);
-	// pthread_join(quickSortThread, NULL);
-
 	clock_t startOfSort = clock();
-
 	(*sortFunc)((void*)args);
-
 	clock_t endOfSort = clock();
 
-	strcpy(result.sortType, sortName);
-	result.timeToComplete = (float)(endOfSort - startOfSort) / CLOCKS_PER_SEC;
+	strcpy(result->sortType, sortName);
+	result->timeToComplete = (float)(endOfSort - startOfSort) / CLOCKS_PER_SEC;
 
 	writeSortedArrToFile(args->arr, arrSize, result);
 
@@ -105,12 +107,12 @@ BenchmarkResult sort(char *fileName, unsigned long arrSize, char *sortName, void
 	return result;
 }
 
-void writeSortedArrToFile(int *sourceArr, unsigned long arrSize, BenchmarkResult result) {
+void writeSortedArrToFile(int *sourceArr, unsigned long arrSize, BenchmarkResult *result) {
 	FILE *fp;
 	unsigned long i;
 	char buff[24];
 	char *name;
-	strcpy(name, result.sortType);
+	strcpy(name, result->sortType);
 	strcat(name, itoa(arrSize, buff, 10));
 
 	if ((fp = fopen(strcat(name, "_result.txt"), "w")) == NULL) {
@@ -118,14 +120,38 @@ void writeSortedArrToFile(int *sourceArr, unsigned long arrSize, BenchmarkResult
 		return;
 	}
 
-	fprintf(fp, "Sort Type - %s\nTime to Complete - %f seconds\n\n\n", result.sortType, result.timeToComplete);
+	fprintf(fp, "Sort Type - %s\nTime to Complete - %f seconds\n\n\n", result->sortType, result->timeToComplete);
 	for (i = 0; i < arrSize; ++i) {
 		fprintf(fp, "[%lu] - %d\n", i, sourceArr[i]);
 	}
 }
 
 void *startBenchmark(void *args) {
-	pthread_t quickSortThread, bubbleSortThread, shellSortThread, mergeSortThread;
+	BenchmarkResult *result;
+
+	result = sort(
+		((BenchmarkArgs*)args)->fileName, 
+		((BenchmarkArgs*)args)->arrSize, 
+		((BenchmarkArgs*)args)->sortName, 
+		((BenchmarkArgs*)args)->sortFunc
+	);
+	pthread_exit(result);
+}
+
+BenchmarkArgs *newBenchmarkArgs(char *fileName, unsigned long arrSize, char *sortName, void (*sortFunc)(void *args)) {
+	
+	BenchmarkArgs *benchMarkArgs = (BenchmarkArgs*)malloc(sizeof(BenchmarkArgs));
+
+	benchMarkArgs->fileName = malloc(strlen(fileName));
+	strcpy(benchMarkArgs->fileName, fileName);
+	
+	benchMarkArgs->sortName = malloc(strlen(sortName));
+	strcpy(benchMarkArgs->sortName, sortName);
+
+	benchMarkArgs->arrSize = arrSize;
+	benchMarkArgs->sortFunc = sortFunc;
+
+	return benchMarkArgs;
 }
 
 ArrayArgs *newArrayArgs(int *arr, int size) {

@@ -9,4 +9,13 @@ typedef struct ArrayArgs {
 
 } ArrayArgs;
 
+typedef struct BenchmarkArgs {
+	char *fileName;
+	unsigned long arrSize;
+	char *sortName;
+
+	void (*sortFunc)(void *args);
+
+} BenchmarkArgs;
+
 #endif
