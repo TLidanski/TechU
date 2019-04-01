@@ -56,13 +56,10 @@ int main() {
 	pthread_join(shellSortThread, &sSortResult);
 	pthread_join(mergeSortThread, &mSortResult);
 
-	BenchmarkResult *qSort = qSortResult; BenchmarkResult *bSort = bSortResult;
-	BenchmarkResult *sSort = sSortResult; BenchmarkResult *mSort = mSortResult;
-
-	printf("Sort Type - %s\nTime - %f\n", qSort->sortType, qSort->timeToComplete);
-	printf("Sort Type - %s\nTime - %f\n", bSort->sortType, bSort->timeToComplete);
-	printf("Sort Type - %s\nTime - %f\n", sSort->sortType, sSort->timeToComplete);
-	printf("Sort Type - %s\nTime - %f\n", mSort->sortType, mSort->timeToComplete);
+	printf("Sort Type - %s\nTime - %f\n", ((BenchmarkResult*)qSortResult)->sortType, ((BenchmarkResult*)qSortResult)->timeToComplete);
+	printf("Sort Type - %s\nTime - %f\n", ((BenchmarkResult*)bSortResult)->sortType, ((BenchmarkResult*)bSortResult)->timeToComplete);
+	printf("Sort Type - %s\nTime - %f\n", ((BenchmarkResult*)sSortResult)->sortType, ((BenchmarkResult*)sSortResult)->timeToComplete);
+	printf("Sort Type - %s\nTime - %f\n", ((BenchmarkResult*)mSortResult)->sortType, ((BenchmarkResult*)mSortResult)->timeToComplete);
 
 	free(qSortArgs); free(bSortArgs); free(sSortArgs); free(mSortArgs);
 	return 0;
