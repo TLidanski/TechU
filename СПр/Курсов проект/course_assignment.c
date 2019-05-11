@@ -1,141 +1,172 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdarg.h>
 #include <unistd.h>
 #include <time.h>
 #include <pthread.h>
+#include <string.h>
+
+#include <fcntl.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 
 #include "quick_sort.h"
 #include "bubble_sort.h"
 #include "shell_sort.h"
 #include "merge_sort.h"
 
-#include "args.h"
+#include "structs.h"
 
-#define MIN_SIZE 6024
-#define MEDIUM_SIZE 70200
-#define LARGE_SIZE 250000
+#define MIN_SIZE 10000
+#define MEDIUM_SIZE 100000
+#define LARGE_SIZE 1000000
 
-#define QUICK_SORT "quick_sort"
-#define BUBBLE_SORT "bubble_sort"
-#define SHELL_SORT "shell_sort"
-#define MERGE_SORT "merge_sort"
+#define DATA_SOURCE "input_data.txt"
 
-#define DATA_SOURCE "data.txt"
+#define RD_WR 0666
 
-typedef struct BenchmarkResult {
-	char sortType[10];
-	float timeToComplete;	
+int *loadArrayFromFile(char *fileName, unsigned long arrSize);
 
-} BenchmarkResult;
+void *sort(void *args);
+void writeResultsToFile(char *destinationFile, BenchmarkResult *resArr[], int numOfResults, unsigned long benchmarkSize);
+void startBenchmark(char *sourceFile, unsigned long size);
 
-void loadArrayFromFile(char *fileName, unsigned long arrSize, int *destination);
-BenchmarkResult *sort(char *fileName, unsigned long arrSize, char *sortName, void (*sortFunc)(void *args));
-void writeSortedArrToFile(int *sourceArr, unsigned long arrSize, BenchmarkResult *result);
-void *startBenchmark(void *args);
-
-BenchmarkArgs *newBenchmarkArgs(char *fileName, unsigned long arrSize, char *sortName, void (*sortFunc)(void *args));
+BenchmarkArgs *newBenchmarkArgs(char *sortName, char *fileName, unsigned long arrSize, void (*sortFunc)(void *args));
 ArrayArgs *newArrayArgs(int *arr, int size);
 
 int main() {
+	startBenchmark(DATA_SOURCE, MIN_SIZE);
+
+	startBenchmark(DATA_SOURCE, MEDIUM_SIZE);
+
+	return 0;
+}
+
+int *loadArrayFromFile(char *fileName, unsigned long arrSize) {
+	unsigned long i = 0;
+
+	int *arr = (int*)calloc(arrSize, sizeof(int));
+	int fileDesc = open(fileName, O_RDONLY);
+
+	if (fileDesc < 0) {
+		printf("Could not open file!\n");
+		exit(0);
+	}
+	
+
+	char *buff = (char*)malloc(sizeof(char));
+	char *intString = (char*)malloc(sizeof(char));
+
+	while (read(fileDesc, buff, sizeof(char)) != 0) {
+
+		if (buff[0] == '\n') {
+
+			// intString[strlen(intString)] = '\0';
+			arr[i] = atoi(intString);
+			i++;
+
+			memset(intString, 0, sizeof(intString));
+			intString = (char*)realloc(intString, sizeof(char));
+		} else {
+
+			strcat(intString, buff);
+			intString = (char*)realloc(intString, (strlen(intString) + sizeof(char)));
+		}		
+
+		if (i == arrSize)
+			break;
+	}
+
+	close(fileDesc);
+	free(buff);
+	free(intString);
+
+	return arr;
+}
+
+void *sort(void *args) {
+	BenchmarkArgs *benchMarkArgs = (BenchmarkArgs*)args;
+	printf("Invoked %s sorting function\n", benchMarkArgs->sortName);
+
+	BenchmarkResult *result = (BenchmarkResult*)malloc(sizeof(BenchmarkResult));
+
+	
+	int *arr = loadArrayFromFile(benchMarkArgs->fileName, benchMarkArgs->arrSize);
+
+	ArrayArgs *sortArgs = newArrayArgs(arr, benchMarkArgs->arrSize);
+
+	clock_t startOfSort = clock();
+	benchMarkArgs->sortFunc((void*)sortArgs);
+	clock_t endOfSort = clock();
+
+	strcpy(result->sortType, benchMarkArgs->sortName);
+	result->timeToComplete = (float)(endOfSort - startOfSort) / CLOCKS_PER_SEC;
+
+	free(arr);
+	free(sortArgs);
+
+	pthread_exit(result);
+}
+
+void writeResultsToFile(char *destinationFile, BenchmarkResult *resArr[], int numOfResults, unsigned long benchmarkSize) {
+	int i, bytes; char buff[100];
+
+	int fileDesc = open(destinationFile, O_CREAT | O_APPEND | O_RDWR , RD_WR);
+	if (fileDesc < 0) {
+		printf("Could not open file!\n");
+		return;	
+	}
+printf("FD = %d", fileDesc);
+	
+	bytes = sprintf(buff, "Results for benchmark with %lu elements\n", benchmarkSize);
+	if(write(fileDesc, buff, bytes) < 0)
+		printf("ERROR while writing results!\n");
+
+	for (i = 0; i < numOfResults; ++i) {
+
+		bytes = sprintf(buff, "Sort Type - %s\nTime - %f\n", resArr[i]->sortType, resArr[i]->timeToComplete);
+
+		if (write(fileDesc, buff, bytes) < 0)
+			printf("ERROR while writing results!\n");
+	}	
+
+	close(fileDesc);
+}
+
+void startBenchmark(char *sourceFile, unsigned long size) {
 	BenchmarkArgs *qSortArgs, *bSortArgs, *sSortArgs, *mSortArgs;
 	void *qSortResult; void *bSortResult; void *sSortResult; void *mSortResult;
 	pthread_t quickSortThread, bubbleSortThread, shellSortThread, mergeSortThread;
 
-	qSortArgs = newBenchmarkArgs(DATA_SOURCE, MIN_SIZE, QUICK_SORT, quickSortWrapper);
-	bSortArgs = newBenchmarkArgs(DATA_SOURCE, MIN_SIZE, BUBBLE_SORT, bubbleSortWrapper);
-	sSortArgs = newBenchmarkArgs(DATA_SOURCE, MIN_SIZE, SHELL_SORT, shellSortWrapper);
-	mSortArgs = newBenchmarkArgs(DATA_SOURCE, MIN_SIZE, MERGE_SORT, mergeSortWrapper);
+	qSortArgs = newBenchmarkArgs("Quick Sort", sourceFile, size, quickSortWrapper);
+	bSortArgs = newBenchmarkArgs("Bubble Sort", sourceFile, size, bubbleSortWrapper);
+	sSortArgs = newBenchmarkArgs("Shell Sort", sourceFile, size, shellSortWrapper);
+	mSortArgs = newBenchmarkArgs("Merge Sort", sourceFile, size, mergeSortWrapper);
 	
-	pthread_create(&quickSortThread, NULL, startBenchmark, (void*)qSortArgs);
-	pthread_create(&mergeSortThread, NULL, startBenchmark, (void*)mSortArgs);
-	pthread_create(&bubbleSortThread, NULL, startBenchmark, (void*)bSortArgs);
-	pthread_create(&shellSortThread, NULL, startBenchmark, (void*)sSortArgs);
+
+	pthread_create(&quickSortThread, NULL, sort, (void*)qSortArgs); pthread_create(&mergeSortThread, NULL, sort, (void*)mSortArgs); 
+	pthread_create(&bubbleSortThread, NULL, sort, (void*)bSortArgs); pthread_create(&shellSortThread, NULL, sort, (void*)sSortArgs);
 	
-	pthread_join(quickSortThread, &qSortResult);
-	pthread_join(bubbleSortThread, &bSortResult);
-	pthread_join(shellSortThread, &sSortResult);
-	pthread_join(mergeSortThread, &mSortResult);
+	pthread_join(quickSortThread, &qSortResult); pthread_join(bubbleSortThread, &bSortResult);
+	pthread_join(shellSortThread, &sSortResult); pthread_join(mergeSortThread, &mSortResult);
 
-	printf("Sort Type - %s\nTime - %f\n", ((BenchmarkResult*)qSortResult)->sortType, ((BenchmarkResult*)qSortResult)->timeToComplete);
-	printf("Sort Type - %s\nTime - %f\n", ((BenchmarkResult*)bSortResult)->sortType, ((BenchmarkResult*)bSortResult)->timeToComplete);
-	printf("Sort Type - %s\nTime - %f\n", ((BenchmarkResult*)sSortResult)->sortType, ((BenchmarkResult*)sSortResult)->timeToComplete);
-	printf("Sort Type - %s\nTime - %f\n", ((BenchmarkResult*)mSortResult)->sortType, ((BenchmarkResult*)mSortResult)->timeToComplete);
+	BenchmarkResult *resultArr[4] = {
+		(BenchmarkResult*)qSortResult, 
+		(BenchmarkResult*)mSortResult, 
+		(BenchmarkResult*)bSortResult, 
+		(BenchmarkResult*)sSortResult
+	};
+	writeResultsToFile("benchmark_results.txt", resultArr, sizeof(resultArr) / sizeof(resultArr[0]), size);
 
-	free(qSortArgs); free(bSortArgs); free(sSortArgs); free(mSortArgs);
-	return 0;
+
+	free(qSortArgs->fileName); free(qSortArgs->sortName); free(qSortArgs);
+	free(bSortArgs->fileName); free(bSortArgs->sortName); free(bSortArgs);
+	free(sSortArgs->fileName); free(sSortArgs->sortName); free(sSortArgs);
+	free(mSortArgs->fileName); free(mSortArgs->sortName); free(mSortArgs);
+	free(qSortResult); free(bSortResult); free(sSortResult); free(mSortResult);
 }
 
-void loadArrayFromFile(char *fileName, unsigned long arrSize, int *destination) {
-	FILE *fp;
-	unsigned long i;
-
-	if ((fp = fopen(fileName, "r")) == NULL) {
-		printf("Error opening file\n");
-		return;
-	}
-
-	for (i = 0; i < arrSize; ++i) {
-		fscanf(fp, "%d,", &destination[i]);
-	}
-
-	fclose(fp);
-}
-
-BenchmarkResult *sort(char *fileName, unsigned long arrSize, char *sortName, void (*sortFunc)(void *args)) {
-	BenchmarkResult *result = (BenchmarkResult*)malloc(sizeof(BenchmarkResult));
-
-	int *arr = (int*)calloc(arrSize, sizeof(int));
-	loadArrayFromFile(fileName, arrSize, arr);
-
-	ArrayArgs *args = newArrayArgs(arr, arrSize);	
-
-	clock_t startOfSort = clock();
-	(*sortFunc)((void*)args);
-	clock_t endOfSort = clock();
-
-	strcpy(result->sortType, sortName);
-	result->timeToComplete = (float)(endOfSort - startOfSort) / CLOCKS_PER_SEC;
-
-	writeSortedArrToFile(args->arr, arrSize, result);
-
-	free(arr);
-	free(args);
-
-	return result;
-}
-
-void writeSortedArrToFile(int *sourceArr, unsigned long arrSize, BenchmarkResult *result) {
-	FILE *fp;
-	unsigned long i;
-	char buff[24];
-	char *name;
-	strcpy(name, result->sortType);
-	strcat(name, itoa(arrSize, buff, 10));
-
-	if ((fp = fopen(strcat(name, "_result.txt"), "w")) == NULL) {
-		printf("Error opening file\n");
-		return;
-	}
-
-	fprintf(fp, "Sort Type - %s\nTime to Complete - %f seconds\n\n\n", result->sortType, result->timeToComplete);
-	for (i = 0; i < arrSize; ++i) {
-		fprintf(fp, "[%lu] - %d\n", i, sourceArr[i]);
-	}
-}
-
-void *startBenchmark(void *args) {
-	BenchmarkResult *result;
-
-	result = sort(
-		((BenchmarkArgs*)args)->fileName, 
-		((BenchmarkArgs*)args)->arrSize, 
-		((BenchmarkArgs*)args)->sortName, 
-		((BenchmarkArgs*)args)->sortFunc
-	);
-	pthread_exit(result);
-}
-
-BenchmarkArgs *newBenchmarkArgs(char *fileName, unsigned long arrSize, char *sortName, void (*sortFunc)(void *args)) {
+BenchmarkArgs *newBenchmarkArgs(char *sortName, char *fileName, unsigned long arrSize, void (*sortFunc)(void *args)) {
 	
 	BenchmarkArgs *benchMarkArgs = (BenchmarkArgs*)malloc(sizeof(BenchmarkArgs));
 
