@@ -22,6 +22,7 @@
 #define LARGE_SIZE 1000000
 
 #define DATA_SOURCE "input_data.txt"
+#define SORTED_DATA_SOURCE "sorted_input_data.txt"
 
 #define RD_WR 0666
 
@@ -37,9 +38,10 @@ ArrayArgs *newArrayArgs(int *arr, int size);
 int main() {
 	// startBenchmark(DATA_SOURCE, MIN_SIZE);
 
-	// startBenchmark(DATA_SOURCE, MEDIUM_SIZE);
+	startBenchmark(DATA_SOURCE, MEDIUM_SIZE);
+	startBenchmark(SORTED_DATA_SOURCE, MEDIUM_SIZE);
 
-	startBenchmark(DATA_SOURCE, LARGE_SIZE);
+	// startBenchmark(DATA_SOURCE, LARGE_SIZE);
 
 	return 0;
 }
@@ -88,7 +90,7 @@ int *loadArrayFromFile(char *fileName, unsigned long arrSize) {
 
 void *sort(void *args) {
 	BenchmarkArgs *benchMarkArgs = (BenchmarkArgs*)args;
-	printf("Invoked %s sorting function\n", benchMarkArgs->sortName);
+	printf("Invoked %s sorting function with %lu elements from %s file\n", benchMarkArgs->sortName, benchMarkArgs->arrSize, benchMarkArgs->fileName);
 
 	BenchmarkResult *result = (BenchmarkResult*)malloc(sizeof(BenchmarkResult));
 
@@ -107,10 +109,11 @@ void *sort(void *args) {
 	free(arr);
 	free(sortArgs);
 
+	printf("%s function has completed its execution\n", benchMarkArgs->sortName);
 	pthread_exit(result);
 }
 
-void writeResultsToFile(char *destinationFile, BenchmarkResult *resArr[], int numOfResults, unsigned long benchmarkSize) {
+void writeResultsToFile(char *destinationFile, BenchmarkResult **resArr, int numOfResults, unsigned long benchmarkSize) {
 	int i, bytes; char buff[100];
 
 	int fileDesc = open(destinationFile, O_CREAT | O_APPEND | O_RDWR , RD_WR);
