@@ -1,5 +1,5 @@
 #include "merge_sort.h"
-#include "args.h"
+#include "structs.h"
 
 void merge(int arr[], int l, int m, int r) { 
 	int i, j, k; 

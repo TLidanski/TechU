@@ -35,9 +35,11 @@ BenchmarkArgs *newBenchmarkArgs(char *sortName, char *fileName, unsigned long ar
 ArrayArgs *newArrayArgs(int *arr, int size);
 
 int main() {
-	startBenchmark(DATA_SOURCE, MIN_SIZE);
+	// startBenchmark(DATA_SOURCE, MIN_SIZE);
 
-	startBenchmark(DATA_SOURCE, MEDIUM_SIZE);
+	// startBenchmark(DATA_SOURCE, MEDIUM_SIZE);
+
+	startBenchmark(DATA_SOURCE, LARGE_SIZE);
 
 	return 0;
 }
@@ -116,7 +118,6 @@ void writeResultsToFile(char *destinationFile, BenchmarkResult *resArr[], int nu
 		printf("Could not open file!\n");
 		return;	
 	}
-printf("FD = %d", fileDesc);
 	
 	bytes = sprintf(buff, "Results for benchmark with %lu elements\n", benchmarkSize);
 	if(write(fileDesc, buff, bytes) < 0)

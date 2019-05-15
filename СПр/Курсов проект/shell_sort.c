@@ -1,5 +1,5 @@
 #include "shell_sort.h"
-#include "args.h"
+#include "structs.h"
 
 void shellSort(int arr[], int arrSize) { 
 	int i, gap;

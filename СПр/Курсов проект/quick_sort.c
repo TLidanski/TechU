@@ -1,6 +1,6 @@
 #include "quick_sort.h"
 #include "swap.h"
-#include "args.h"
+#include "structs.h"
 
 int partition(int arr[], int firstEle, int lastEle) {
 

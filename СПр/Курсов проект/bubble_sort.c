@@ -1,6 +1,6 @@
 #include "bubble_sort.h"
 #include "swap.h"
-#include "args.h"
+#include "structs.h"
 
 void bubbleSort(int arr[], int arrSize) { 
 	int i, j; 
